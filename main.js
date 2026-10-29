@@ -175,7 +175,9 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
       const a = f0 * Math.pow(f1 / f0, i / N), b = f0 * Math.pow(f1 / f0, (i + 1) / N);
       let lo = Math.floor(a / hz), hi = Math.max(lo, Math.ceil(b / hz) - 1), m = 0;
       for (let j = lo; j <= hi && j < bins.length; j++) m = Math.max(m, bins[j]);
-      let v = Math.pow(m / 255, 1.6) * (1 + i / N * .6);
+      // tilt: bass/low-mid weighted down, highs lifted; soft-knee keeps headroom so bars never pin
+      const r = i / N, wt = r < .35 ? .58 + r / .35 * .34 : .92 + (r - .35) * .9;
+      let q = Math.pow(m / 255, 1.8) * wt; let v = .96 * (1 - Math.exp(-2.1 * q)) / (1 - Math.exp(-2.1));
       hBar[i] = v > hBar[i] ? v : hBar[i] * .92 + v * .08;
       if (hBar[i] >= peak[i]) { peak[i] = hBar[i]; pv[i] = 0; } else { pv[i] += .0009; peak[i] = Math.max(0, peak[i] - pv[i]); }
       const h = Math.min(1, hBar[i]) * H * .55, x = i * bw + bw * .18, w = bw * .64;
@@ -185,5 +187,6 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
     }
     g.shadowBlur = 0;
   }
+  window.__vz = () => [N, hBar];
   requestAnimationFrame(frame);
 })();
