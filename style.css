@@ -68,3 +68,13 @@ background:radial-gradient(circle,rgba(255,240,190,.9) 0,rgba(245,190,80,.35) 18
 .track .seek{flex:1;accent-color:var(--gold);height:2px}
 .track .tm{font-size:.7rem;opacity:.55;font-variant-numeric:tabular-nums;white-space:nowrap}
 body.track-playing .track button{border-color:var(--gold)}
+
+/* ---- portrait / phone: full-screen hero, separate wordmark layer ---- */
+.stage>picture{inset:0}.wmp{display:none}
+@media (max-aspect-ratio:4/3){
+#hero{height:100vh;height:100svh;aspect-ratio:auto;min-height:0;overflow:hidden;display:block;position:relative}
+.stage{left:50%;top:50%;width:max(100%,calc(100svh*16/9));transform:translate(-50%,-50%)}
+.wmp{display:block;position:absolute;left:50%;top:28.3%;width:94vw;max-width:none;transform:translate(-50%,-50%);z-index:3;pointer-events:none}
+#enter{position:absolute;left:50%;bottom:10svh;transform:translateX(-50%);z-index:5}
+#descent{height:100vh;padding-top:0}
+}
