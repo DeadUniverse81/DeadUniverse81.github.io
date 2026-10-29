@@ -2,6 +2,10 @@
 const TRACKS = [
   { title: "Rewritten by Light", year: 2026, cover: "assets/covers/rewritten_by_light.jpg", preview: "assets/tracks/rewritten_by_light.mp3",
     links: { /* spotify:"", youtube:"", bandcamp:"" */ } },
+  { title: "Erased by Light", year: 2026, cover: "assets/covers/erased_by_light.jpg", preview: "assets/tracks/erased_by_light.mp3",
+    links: {} },
+  { title: "Ashes in My Veins", year: 2026, cover: "assets/covers/ashes_in_my_veins.jpg", preview: "assets/tracks/ashes_in_my_veins.mp3",
+    links: {} },
 ];
 
 const amb = document.getElementById('ambient'), muteBtn = document.getElementById('mute');

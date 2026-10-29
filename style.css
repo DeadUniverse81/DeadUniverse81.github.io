@@ -102,4 +102,15 @@ body.track-playing .stage>.wmt{opacity:1}
 #enter{transition:opacity 1s ease,visibility 1s}
 body.entered #enter{opacity:0;visibility:hidden;pointer-events:none}
 @media (max-aspect-ratio:4/3){.wmp{width:88vw;filter:drop-shadow(0 0 6px rgba(0,0,0,.9))}}
-@media (min-width:2400px){html{font-size:200%}#music{max-width:2400px}#tracks{grid-template-columns:repeat(auto-fit,minmax(520px,680px))}#mute{font-size:1.1rem}}
+@media (min-width:2400px) and (min-height:1400px){html{font-size:200%}#music{max-width:2400px}#tracks{grid-template-columns:repeat(auto-fit,minmax(520px,680px))}#mute{font-size:1.1rem}}
+/* v17: wider than 16:9 -> fit stage by height, mirrored nebula extension on the sides */
+@media (min-aspect-ratio:1610/900){
+#hero{height:100vh;height:100svh;background:#000 url(assets/neb_notext_4k.jpg) center/cover no-repeat!important}
+.stage{width:calc(100svh*16/9);height:100svh;top:50%;left:50%;transform:translate(-50%,-50%)}
+.stage{-webkit-mask:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+body.track-playing #hero{background:transparent!important}
+}
+#music{max-width:1320px}#tracks{gap:2rem;grid-template-columns:repeat(auto-fit,minmax(240px,320px))}
+@media (min-width:2400px) and (min-height:1400px){#tracks{grid-template-columns:repeat(auto-fit,minmax(480px,600px))}}
+#music{max-width:none;padding-left:max(5vw,calc(50% - 560px));padding-right:max(5vw,calc(50% - 560px))}
+@media (min-width:2400px) and (min-height:1400px){#music{padding-left:max(5vw,calc(50% - 1000px));padding-right:max(5vw,calc(50% - 1000px))}}
