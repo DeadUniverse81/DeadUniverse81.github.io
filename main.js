@@ -93,7 +93,12 @@ TRACKS.forEach(t => {
     a.onpause = a.onended = () => { b.textContent = 'Play'; if (current === a) { trackOn = false; document.body.classList.remove('track-playing');
       if (!muted && ambOk) { amb.play().catch(() => {}); fadeTo(target(), 1500); } } };
     b.onclick = () => a.paused ? a.play() : a.pause();
-    const p = document.createElement('div'); p.className = 'player'; p.append(b, bar, tm);
+    const rk = 'du-loop-' + t.title, rp = document.createElement('button'); rp.className = 'rep'; rp.type = 'button';
+    rp.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4V7H7a2 2 0 0 0-2 2v3H3V9a4 4 0 0 1 4-4h10zM7 22l-4-4 4-4v3h10a2 2 0 0 0 2-2v-3h2v3a4 4 0 0 1-4 4H7z"/></svg>';
+    const setLoop = on => { a.loop = on; rp.classList.toggle('on', on); rp.setAttribute('aria-pressed', on); rp.title = rp.ariaLabel = on ? 'Repeat on' : 'Repeat off'; try { localStorage.setItem(rk, on ? '1' : '0'); } catch (e) {} };
+    let lsv = null; try { lsv = localStorage.getItem(rk); } catch (e) {} setLoop(lsv === '1');
+    rp.onclick = () => setLoop(!a.loop);
+    const p = document.createElement('div'); p.className = 'player'; p.append(b, rp, bar, tm);
     el.querySelector('.meta').appendChild(p);
   }
   addLike(el, t.title);
