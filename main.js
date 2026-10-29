@@ -1,21 +1,21 @@
 // ---- Tracks: add new entries here (see README) ----
 const TRACKS = [
   { title: "Rewritten by Light", year: 2026, cover: "assets/covers/rewritten_by_light.jpg", preview: "assets/tracks/rewritten_by_light.mp3",
-    links: { /* spotify:"", youtube:"", bandcamp:"" */ } },
+    links: { youtube: "https://www.youtube.com/watch?v=AVtK1Isjh_c", soundcloud: "https://soundcloud.com/refused-1/rewritten-by-light" } },
   { title: "Erased by Light", year: 2026, cover: "assets/covers/erased_by_light.jpg", preview: "assets/tracks/erased_by_light.mp3",
-    links: {} },
+    links: { youtube: "https://www.youtube.com/watch?v=iFYff9YwKm0", soundcloud: "https://soundcloud.com/refused-1/erased-by-light-01-weekend-022" } },
   { title: "Ashes in My Veins", year: 2026, cover: "assets/covers/ashes_in_my_veins.jpg", preview: "assets/tracks/ashes_in_my_veins.mp3",
-    links: {} },
+    links: { youtube: "https://www.youtube.com/watch?v=DcL-ZKZnhv0", soundcloud: "https://soundcloud.com/refused-1/ashes-in-my-veins-1-muse-eq" } },
   { title: "The Monolith", year: 2026, cover: "assets/covers/the_monolith.jpg", preview: "assets/tracks/the_monolith.mp3",
-    links: {} },
+    links: { youtube: "https://www.youtube.com/watch?v=ovm1lZ5976s", soundcloud: "https://soundcloud.com/refused-1/the-monolith-alpha-version" } },
   { title: "The Oblivion", year: 2026, cover: "assets/covers/the_oblivion.jpg", preview: "assets/tracks/the_oblivion.mp3",
-    links: {} },
+    links: { youtube: "https://www.youtube.com/watch?v=2Q01_zhEoL4", soundcloud: "https://soundcloud.com/refused-1/oblivion-alpha-version" } },
   { title: "b4bYLon", year: 2026, cover: "assets/covers/b4bylon.jpg", preview: "assets/tracks/b4bylon.mp3",
-    links: {} },
+    links: { youtube: "https://www.youtube.com/watch?v=KmJiMSGm8Fo", soundcloud: "https://soundcloud.com/refused-1/b4bylon-remastered-edition" } },
   { title: "Burn the World Down", year: 2026, cover: "assets/covers/burn_the_world_down.jpg", preview: "assets/tracks/burn_the_world_down.mp3",
-    links: {} },
+    links: { youtube: "https://www.youtube.com/watch?v=yRFk82_a2Kk", soundcloud: "https://soundcloud.com/refused-1/burn-the-world-down" } },
   { title: "Lift Me Up", year: 2026, cover: "assets/covers/lift_me_up.jpg", preview: "assets/tracks/lift_me_up.mp3",
-    links: {} },
+    links: { youtube: "https://www.youtube.com/watch?v=pqeeRgr7104", soundcloud: "https://soundcloud.com/refused-1/lift-me-up-original-version" } },
 ];
 
 const amb = document.getElementById('ambient'), muteBtn = document.getElementById('mute');
@@ -47,6 +47,7 @@ function hookAnalyser(a) { try {
 } catch (e) { console.warn('analyser unavailable', e); } }
 
 // ---- Music list ----
+const ICONS = {"youtube": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.4-1.6.5-4.8.5-4.8s0-3.2-.5-4.8zM9.7 15.1V8.9l5.8 3.1z\"/></svg>", "soundcloud": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M1 14.5h.9v3.3H1zm1.8-1.3h.9v4.6h-.9zm1.8-.8h.9v5.4h-.9zm1.8-.4h.9v5.8h-.9zm1.8-1.4h.9v7.2h-.9zm1.8-1.5h.9v8.7h-.9zm1.8-1.3c.5-.2 1.1-.3 1.6-.3a5.1 5.1 0 0 1 5.1 4.6 2.9 2.9 0 0 1 .9-.1 3 3 0 0 1 0 6h-7.6z\"/></svg>"};
 const LABELS = { spotify: 'Spotify', youtube: 'YouTube', bandcamp: 'Bandcamp', apple: 'Apple Music', soundcloud: 'SoundCloud' };
 let current = null;
 // v31: per-track like (abacus counter), one per browser per track, silent if the API is down
@@ -75,7 +76,7 @@ TRACKS.forEach(t => {
   const links = Object.entries(t.links || {}).filter(([, u]) => u);
   el.innerHTML = (t.cover ? `<img src="${t.cover}" alt="${t.title} cover" loading="lazy">` : `<div class="nocover"></div>`) +
     `<div class="meta"><h3>${t.title}</h3><div class="year">${t.year || ''}</div>` +
-    `<div class="links">${links.length ? links.map(([k, u]) => `<a href="${u}" target="_blank" rel="noopener">${LABELS[k] || k}</a>`).join('') : '<span class="soon">Links coming soon</span>'}</div></div>`;
+    `<div class="links">${links.length ? links.map(([k, u]) => `<a class="lnk" href="${u}" target="_blank" rel="noopener">${ICONS[k] || ''}<span>${LABELS[k] || k}</span></a>`).join('') : '<span class="soon">Links coming soon</span>'}</div></div>`;
   if (t.preview) {
     // Track player: intro fades out & pauses, body.track-playing set, window.DU.analyser exposed for visuals
     const a = new Audio(); a.preload = 'metadata'; a.src = t.preview;
