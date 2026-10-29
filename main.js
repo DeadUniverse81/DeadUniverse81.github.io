@@ -89,7 +89,7 @@ TRACKS.forEach(t => {
     a.ontimeupdate = a.onloadedmetadata = () => { if (a.duration) bar.value = a.currentTime / a.duration * 1000; tm.textContent = `${fmt(a.currentTime)} / ${fmt(a.duration)}`; };
     bar.oninput = () => { if (a.duration) a.currentTime = bar.value / 1000 * a.duration; };
     a.onplay = () => { if (current && current !== a) current.pause(); current = a; hookAnalyser(a);
-      trackOn = true; document.body.classList.add('track-playing'); hideEnter(); fadeTo(0, 800); b.textContent = 'Pause'; };
+      trackOn = true; document.dispatchEvent(new CustomEvent('du:play', { detail: { cover: t.cover, el } })); document.body.classList.add('track-playing'); hideEnter(); fadeTo(0, 800); b.textContent = 'Pause'; };
     a.onpause = a.onended = () => { b.textContent = 'Play'; if (current === a) { trackOn = false; document.body.classList.remove('track-playing');
       if (!muted && ambOk) { amb.play().catch(() => {}); fadeTo(target(), 1500); } } };
     b.onclick = () => a.paused ? a.play() : a.pause();
@@ -180,7 +180,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
 // ---- Track visualizer: full-screen log spectrum + bass flashes on the nebula ----
 (() => {
   const cv = document.getElementById('viz'), g = cv.getContext('2d'), nf = document.querySelector('#vizbg .nf');
-  let N = 96, bins, hBar = new Float32Array(N), peak = new Float32Array(N), pv = new Float32Array(N), rp = new Float32Array(96).fill(.3), av = new Float32Array(96), gpk = .05, W = 0, H = 0, avg = 0, last = 0, fl = 0, idle = 0;
+  let N = 96, bins, hBar = new Float32Array(N), peak = new Float32Array(N), pv = new Float32Array(N), rp = new Float32Array(96).fill(.3), av = new Float32Array(96), gpk = .05, W = 0, H = 0, avg = 0, last = 0, fl = 0, idle = 0, lastG = 0;
   function rs() { const d = Math.min(devicePixelRatio || 1, 3840 / Math.max(1, innerWidth)); W = cv.width = Math.round(innerWidth * d); H = cv.height = Math.round(innerHeight * d); N = Math.max(40, Math.min(96, Math.round(innerWidth / 14))); }
   addEventListener('resize', rs); rs();
   function frame(t) {
@@ -196,6 +196,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
     let e = 0, n = 0; for (let i = Math.max(1, Math.floor(30 / hz)); i <= Math.ceil(150 / hz); i++) { e += bins[i]; n++; } e /= n * 255;
     avg += (e - avg) * .05;
     if (on && !still && e > avg * 1.18 + .04 && e > .35 && t - last > 140) { last = t; fl = Math.min(1, (e - avg) * 4 + .3); }
+    if (on && !still && e > .58 && e > avg * 1.45 + .06 && t - lastG > 900) { lastG = t; document.dispatchEvent(new CustomEvent('du:bighit')); }
     fl *= .88; nf.style.opacity = fl.toFixed(3);
     const f0 = 70, f1 = 16500, bw = W / N, cy = H * .62;
     const grd = g.createLinearGradient(0, cy - H * .55, 0, cy);
@@ -241,4 +242,40 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
     document.getElementById('vToday').textContent = f(Math.max(d, 1)); document.getElementById('vAll').textContent = f(Math.max(a, d, 1));
     box.hidden = false;
   }).catch(() => { box.hidden = true; });
+})();
+
+// ---- v41 FX: fog dive, floating cover, living spark, glitch title ----
+(() => {
+  const rm = matchMedia('(prefers-reduced-motion: reduce)').matches, B = document.body;
+  // 1. fog flowing down from the hero into the Music section
+  const ds = document.getElementById('descent'), fog = document.createElement('div'); fog.className = 'fog'; fog.setAttribute('aria-hidden', 'true');
+  ds && ds.prepend(fog);
+  let fq = false;
+  const fogU = () => { fq = false; if (!ds) return; const r = ds.getBoundingClientRect(), h = innerHeight;
+    const p = Math.min(1, Math.max(0, (h - r.top) / (h + r.height * .6)));   // 0 at hero, 1 deep in descent
+    fog.style.opacity = (Math.sin(Math.PI * Math.min(1, p * 1.25)) * .95).toFixed(3);
+    fog.style.transform = rm ? 'none' : `translate3d(0,${(p * 18).toFixed(2)}vh,0) scale(${(1 + p * .08).toFixed(3)})`; };
+  addEventListener('scroll', () => { if (!fq) { fq = true; requestAnimationFrame(fogU); } }, { passive: true }); addEventListener('resize', fogU); fogU();
+  // 2. floating cover behind the analyzer
+  const fc = document.createElement('div'); fc.id = 'fcover'; fc.setAttribute('aria-hidden', 'true');
+  const vb = document.getElementById('vizbg'); vb.after(fc);
+  let curEl = null;
+  document.addEventListener('du:play', e => { const d = e.detail; curEl = d.el; if (d.cover) fc.style.backgroundImage = `url("${d.cover}")`; });
+  // 3. spark follows the pointer (eased); touch: device tilt or idle drift
+  const st = document.querySelector('.stage'); let tx = 0, ty = 0, x = 0, y = 0, ptr = false, tilt = false;
+  if (st && !rm) {
+    const R = () => Math.min(innerWidth, innerHeight) * .018;
+    addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; ptr = true;
+      tx = (e.clientX / innerWidth - .5) * 2 * R(); ty = (e.clientY / innerHeight - .5) * 2 * R(); }, { passive: true });
+    addEventListener('deviceorientation', e => { if (e.gamma == null) return; tilt = true;
+      tx = Math.max(-1, Math.min(1, e.gamma / 30)) * R(); ty = Math.max(-1, Math.min(1, (e.beta - 45) / 30)) * R(); }, { passive: true });
+    (function f(t) { if (!ptr && !tilt) { tx = Math.sin(t / 3100) * R() * .6; ty = Math.cos(t / 4300) * R() * .45; }
+      x += (tx - x) * .045; y += (ty - y) * .045;
+      if (st.getBoundingClientRect().bottom > 0) { st.style.setProperty('--sx', x.toFixed(2) + 'px'); st.style.setProperty('--sy', y.toFixed(2) + 'px'); }
+      requestAnimationFrame(f); })(0);
+  }
+  // 4. glitch the playing title on big bass hits
+  document.addEventListener('du:bighit', () => { if (rm || !curEl || !B.classList.contains('track-playing')) return;
+    const h = curEl.querySelector('h3'); if (!h) return; h.dataset.t = h.textContent;
+    h.classList.remove('glitch'); void h.offsetWidth; h.classList.add('glitch'); setTimeout(() => h.classList.remove('glitch'), 130); });
 })();

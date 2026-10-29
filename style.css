@@ -190,3 +190,18 @@ body.entered .stage>.wmt{opacity:1}
 .track .seek{flex:1 1 auto;min-width:0;width:auto}
 .track .tm{flex:none;font-size:.62rem;letter-spacing:0}
 @container (max-width:240px){.track .player{flex-wrap:wrap}.track .tm{flex-basis:100%;text-align:right}}
+/* v41 FX */
+.sglow,.sflick{translate:calc(-50% + var(--sx,0px)) calc(-50% + var(--sy,0px))}
+#descent{overflow:visible;z-index:2}
+#descent .fog{position:absolute;left:0;right:0;top:-30vh;height:120vh;pointer-events:none;z-index:0;opacity:0;will-change:transform,opacity;
+background:radial-gradient(60% 45% at 30% 30%,rgba(18,16,14,.9),transparent 70%),radial-gradient(55% 40% at 72% 40%,rgba(30,26,22,.75),transparent 70%),url(assets/neb_notext_4k.jpg) center 70%/cover no-repeat;
+-webkit-mask:linear-gradient(transparent 0,#000 12%,#000 50%,transparent 100%);mask:linear-gradient(transparent 0,#000 12%,#000 50%,transparent 100%);filter:brightness(.7) contrast(1.1)}
+#descent>.manifesto{z-index:1}
+#fcover{position:fixed;left:50%;top:46%;width:min(62vmin,720px);aspect-ratio:1;translate:-50% -50%;z-index:0;pointer-events:none;opacity:0;
+background:center/cover no-repeat;border-radius:2px;filter:saturate(.75) brightness(.8);transition:opacity 1.6s ease;
+-webkit-mask:radial-gradient(closest-side,#000 55%,transparent);mask:radial-gradient(closest-side,#000 55%,transparent);will-change:transform}
+body.track-playing #fcover{opacity:.2;animation:cfloat 24s ease-in-out infinite}
+@keyframes cfloat{0%,100%{transform:perspective(1200px) rotateX(6deg) rotateY(-9deg) translate3d(-1.5%,0,0)}33%{transform:perspective(1200px) rotateX(-4deg) rotateY(7deg) translate3d(1.5%,-2%,0)}66%{transform:perspective(1200px) rotateX(3deg) rotateY(-3deg) translate3d(.5%,1.5%,0)}}
+.track h3.glitch{position:relative;color:#c4101c;text-shadow:-3px 0 rgba(255,0,40,.85),3px 0 rgba(0,200,255,.35);animation:gl .13s steps(3) 1}
+@keyframes gl{0%{transform:translate(2px,-1px) skewX(-8deg);clip-path:inset(0 0 40% 0)}50%{transform:translate(-3px,1px) skewX(6deg);clip-path:inset(30% 0 0 0)}100%{transform:none;clip-path:none}}
+@media (prefers-reduced-motion:reduce){body.track-playing #fcover{animation:none}#descent .fog{transform:none!important}}
