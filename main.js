@@ -10,6 +10,8 @@ const TRACKS = [
     links: {} },
   { title: "The Oblivion", year: 2026, cover: "assets/covers/the_oblivion.jpg", preview: "assets/tracks/the_oblivion.mp3",
     links: {} },
+  { title: "b4bYLon", year: 2026, cover: "assets/covers/b4bylon.jpg", preview: "assets/tracks/b4bylon.mp3",
+    links: {} },
 ];
 
 const amb = document.getElementById('ambient'), muteBtn = document.getElementById('mute');
