@@ -49,6 +49,26 @@ function hookAnalyser(a) { try {
 // ---- Music list ----
 const LABELS = { spotify: 'Spotify', youtube: 'YouTube', bandcamp: 'Bandcamp', apple: 'Apple Music', soundcloud: 'SoundCloud' };
 let current = null;
+// v31: per-track like (abacus counter), one per browser per track, silent if the API is down
+function addLike(el, title) {
+  const API = 'https://abacus.jasoncameron.dev', NS = 'deaduniversemusic';
+  const key = 'like-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''), ls = 'du_' + key;
+  let liked = false; try { liked = localStorage.getItem(ls) === '1'; } catch (e) {}
+  const b = document.createElement('button'); b.className = 'like' + (liked ? ' on' : ''); b.type = 'button';
+  b.setAttribute('aria-label', 'Like ' + title); b.setAttribute('aria-pressed', liked);
+  b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.3 5.4 3.2 1.5-1.9 3.3-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z"/></svg><span class="lc"></span>';
+  const lc = b.querySelector('.lc');
+  const val = r => r.status === 404 ? { value: 0 } : r.ok ? r.json() : Promise.reject();
+  const show = n => { if (typeof n === 'number') { lc.textContent = n.toLocaleString('en-US'); b.classList.add('ok'); } };
+  fetch(`${API}/get/${NS}/${key}`, { cache: 'no-store' }).then(val).then(j => show(j.value)).catch(() => {});
+  b.onclick = () => {
+    if (b.classList.contains('on')) return; b.classList.add('on', 'pop'); b.setAttribute('aria-pressed', true);
+    try { localStorage.setItem(ls, '1'); } catch (e) {}
+    fetch(`${API}/hit/${NS}/${key}`, { cache: 'no-store' }).then(val).then(j => show(j.value)).catch(() => {});
+    setTimeout(() => b.classList.remove('pop'), 500);
+  };
+  el.querySelector('.meta').appendChild(b);
+}
 const wrap = document.getElementById('tracks');
 TRACKS.forEach(t => {
   const el = document.createElement('article'); el.className = 'track';
@@ -73,6 +93,7 @@ TRACKS.forEach(t => {
     const p = document.createElement('div'); p.className = 'player'; p.append(b, bar, tm);
     el.querySelector('.meta').appendChild(p);
   }
+  addLike(el, t.title);
   wrap.appendChild(el);
 });
 
@@ -195,4 +216,21 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
   }
   window.__vz = () => [N, hBar];
   requestAnimationFrame(frame);
+})();
+
+// v31: visitor counter (abacus.jasoncameron.dev), one hit per browser per Budapest day, silent on failure
+(() => {
+  const box = document.getElementById('visits'); if (!box || !window.fetch) return;
+  const API = 'https://abacus.jasoncameron.dev', NS = 'deaduniversemusic';
+  let day; try { day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Budapest' }).format(new Date()).replace(/-/g, ''); } catch (e) { day = new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
+  let seen = null; try { seen = localStorage.getItem('du_seen'); } catch (e) {}
+  const fresh = seen !== day;
+  const get = k => fetch(`${API}/${fresh ? 'hit' : 'get'}/${NS}/${k}`, { cache: 'no-store' })
+    .then(r => r.status === 404 ? { value: 0 } : r.ok ? r.json() : Promise.reject()).then(j => typeof j.value === 'number' ? j.value : Promise.reject());
+  Promise.all([get('d' + day), get('alltime')]).then(([d, a]) => {
+    if (fresh) try { localStorage.setItem('du_seen', day); } catch (e) {}
+    const f = n => n.toLocaleString('en-US');
+    document.getElementById('vToday').textContent = f(Math.max(d, 1)); document.getElementById('vAll').textContent = f(Math.max(a, d, 1));
+    box.hidden = false;
+  }).catch(() => { box.hidden = true; });
 })();

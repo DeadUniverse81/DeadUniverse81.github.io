@@ -139,3 +139,20 @@ body.entered .hbg,body.entered .stage>.neb,body.entered .astro{opacity:0!importa
 body.entered .stage>.wmt{opacity:1}
 @media (max-aspect-ratio:4/3){body.entered .stage>.wmt{opacity:0}}
 @media (prefers-reduced-motion:reduce){body.entered #vizbg::before{animation-duration:120s}}
+
+/* v31: visitor counter */
+#visits{font-family:'Michroma',sans-serif;font-size:.58rem!important;letter-spacing:.22em;color:var(--bone);opacity:.38!important;margin-top:2.2rem!important;white-space:nowrap}
+#visits[hidden]{display:none}
+#visits b{font-weight:400;color:var(--gold);margin:0 .35em}
+@media (max-width:420px){#visits{font-size:.5rem!important;letter-spacing:.14em}}
+
+/* v31: like heart */
+.track .meta{position:relative}
+.like{position:absolute;top:.9rem;right:.9rem;display:flex;align-items:center;gap:.45em;background:none;border:0;padding:.3em;cursor:pointer;color:var(--gold);font-family:'Michroma',sans-serif;font-size:.62rem;letter-spacing:.12em;opacity:.55;transition:opacity .3s,transform .3s}
+.like:hover{opacity:.95}
+.like svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.6;transition:fill .3s,filter .3s}
+.like.on{opacity:.95}.like.on svg{fill:#b3120c;stroke:#e0261a;filter:drop-shadow(0 0 6px rgba(220,30,20,.6))}
+.like .lc{display:none;color:var(--bone)}.like.ok .lc{display:inline}
+.like.pop{transform:scale(1.25)}
+@media (max-width:600px){.like svg{width:1.5rem;height:1.5rem}.like{font-size:.7rem}}
+.track .meta .like,.track .meta .like:hover{border:0!important;box-shadow:none!important;background:none!important;padding:.3em!important}
