@@ -17,7 +17,15 @@ pk, _ = find_peaks(flux, height=4, distance=int(.4*fps))
 # strength: rise size + how far the peak level (next 80 ms) sits above local average + absolute loudness
 pl = np.array([db[p:p+int(.08*fps)].max() for p in pk])
 score = .45*np.clip(flux[pk]/12,0,1) + .35*np.clip((pl-loc[pk])/9,0,1) + .2*np.clip((pl+24)/24,0,1)
-sel = score >= KEEP
+# cross-check: sub (<110 Hz) RMS right after the hit must be clearly high, and a real attack over the 300 ms before
+def rms(a,b_): seg=b[max(0,a):max(a+1,b_)]; return 20*np.log10(np.sqrt((seg**2).mean())/np.abs(b).max()+1e-9)
+L=np.array([rms(int(p*hop),int(p*hop+.1*SR)) for p in pk]); A=L-np.array([rms(int(p*hop-.3*SR),int(p*hop-.02*SR)) for p in pk])
+gate=(L>=-14)&((A>=6)|((L>=-9)&(A>=2.5)))
+if '-g' in sys.argv:
+  for p,sc,l,aa in zip(pk,score,L,A):
+    if sc>=KEEP: print(f"  {p/fps:7.2f}s subRMS {l:6.1f}dB attack {aa:5.1f}dB {'ok' if (l>=-14 and (aa>=6 or (l>=-9 and aa>=2.5))) else 'DROP'}")
+sel = (score >= KEEP) & gate
+print('dropped by sub cross-check:', [round(p/fps,2) for p in pk[(score>=KEEP)&~gate]])
 s = np.clip((score[sel]-KEEP)/(1-KEEP)*.75+.25, 0, 1)
 hits = [{'t': round((p - int(.04*fps)*0 )/fps, 3), 's': round(float(v),3)} for p, v in zip(pk[sel], s)]
 json.dump({'duration': round(dur,3), 'hits': hits}, open(out,'w'))

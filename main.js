@@ -95,7 +95,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
   const amp = still ? .3 : 1; let o = .3, k = 1, r = 0, to = .3, tk = 1, tr = 0, next = 0;
   (function f(t) {
     if (t > next) { // new random target every 40-160 ms (irregular, not strobe)
-      to = .22 + Math.random() * .16 * amp + (Math.random() < .06 ? .12 * amp : 0);
+      to = .22 + Math.random() * .16 * amp;
       tk = 1 + (Math.random() - .5) * .14 * amp; tr = (Math.random() - .5) * 6 * amp; next = t + 40 + Math.random() * 120; }
     o += (to - o) * .25; k += (tk - k) * .2; r += (tr - r) * .15;
     sf.style.opacity = o.toFixed(3); sf.style.transform = `scale(${k.toFixed(3)}) rotate(${r.toFixed(2)}deg)`;
@@ -105,7 +105,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
 
 // ---- Hero lightning (inside cross window only) ----
 // Music playing: flashes on bass hits from assets/bass_hits.json (synced to amb.currentTime).
-// Before ENTER / no hits file: rare random lightning. Muted after ENTER: none.
+// No random strikes: flashes fire only from the bass-hit map while the intro plays.
 (() => {
   const fl = document.querySelector('.flash'), al = document.querySelector('.alit');
   if (!fl || still) return;
@@ -122,25 +122,16 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
   const ml = document.querySelector('.mlogo');
   function logo(s) { if (!ml) return; const p = Math.min(1, .6 + .5 * s), gl = 10 + 24 * s, d = 'drop-shadow(0 0 0 rgba(90,0,8,0))';
     ml.animate([{ opacity: 0, filter: `brightness(1) ${d} ${d}` },
-      { opacity: p * .7, filter: `brightness(1.25) drop-shadow(0 0 ${gl * .4}px rgba(160,0,10,.9)) drop-shadow(0 0 ${gl}px rgba(110,0,12,.8))`, offset: .04 },
-      { opacity: p * .35, filter: `brightness(1.1) drop-shadow(0 0 ${gl * .4}px rgba(150,0,10,.7)) drop-shadow(0 0 ${gl}px rgba(100,0,12,.6))`, offset: .07 },
-      { opacity: p, filter: `brightness(1.3) drop-shadow(0 0 ${gl * .4}px rgba(170,0,12,.95)) drop-shadow(0 0 ${gl * 1.3}px rgba(100,0,14,.85))`, offset: .1 },
+      { opacity: p, filter: `brightness(1.3) drop-shadow(0 0 ${gl * .4}px rgba(170,0,12,.95)) drop-shadow(0 0 ${gl * 1.3}px rgba(100,0,14,.85))`, offset: .08 },
       { opacity: p * .4, filter: `brightness(1) drop-shadow(0 0 4px rgba(120,0,10,.5)) drop-shadow(0 0 ${gl * .8}px rgba(70,0,10,.4))`, offset: .42 },
       { opacity: 0, filter: `brightness(1) ${d} ${d}` }],
       { duration: 900 + 900 * s, easing: 'cubic-bezier(.2,.7,.3,1)', composite: 'replace' }); }
   if (force) { fl.style.opacity = .4; al.style.opacity = .18; return; }
   let hits = null, idx = 0, lastT = 0, entered = false;
-  fetch('assets/bass_hits.json').then(r => r.json()).then(d => { hits = d.hits || []; if (!hits.length) hits = null; }).catch(() => {});
+  fetch('assets/bass_hits.json?v=27', { cache: 'no-cache' }).then(r => r.json()).then(d => { hits = d.hits || []; if (!hits.length) hits = null; }).catch(() => {});
   document.getElementById('enter').addEventListener('click', () => { entered = true; });
   const synced = () => hits && ambOk && !amb.paused && !muted;
-  function strike() {
-    const n = Math.random() < .35 ? (Math.random() < .4 ? 3 : 2) : 1; let t = 0;
-    for (let i = 0; i < n; i++) { setTimeout(() => pulse(.16 + Math.random() * .24, 100 + Math.random() * 300), t); t += 60 + Math.random() * 140; }
-  }
-  (function loop() { setTimeout(() => {
-    // random only when music isn't driving it: before ENTER, or if hits/audio unavailable (but never when muted after ENTER)
-    if (!synced() && (!entered || ((!hits || !ambOk) && !muted))) strike();
-    loop(); }, 9000 + Math.random() * 12000); })();
+  // no random lightning: every flash comes only from the bass-hit map
   function seek(t) { idx = 0; while (idx < hits.length && hits[idx].t < t) idx++; }
   (function tick() {
     if (synced()) {
@@ -149,7 +140,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
       lastT = t;
       while (idx < hits.length && hits[idx].t <= t) {
         const h = hits[idx++];
-        if (t - h.t < 0.12) { pulse(.14 + .4 * h.s, 140 + 200 * h.s); spark(h.s); logo(h.s); if (dbg) console.log(`HIT t=${h.t} s=${h.s} at=${t.toFixed(3)}`); }
+        if (t - h.t < 0.12) { window.__fl && __fl.push(['hit', h.t, +t.toFixed(3)]); pulse(.14 + .4 * h.s, 140 + 200 * h.s); spark(h.s); logo(h.s); if (dbg) console.log(`HIT t=${h.t} s=${h.s} at=${t.toFixed(3)}`); }
       }
     } else if (hits && ambOk) { lastT = amb.currentTime; seek(lastT); }
     requestAnimationFrame(tick);
