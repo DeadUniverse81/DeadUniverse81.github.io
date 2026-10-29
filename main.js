@@ -120,11 +120,13 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
     sg.animate([{ opacity: .3, scale: 1, filter: 'brightness(1)' }, { opacity: .45 + .5 * s, scale: 1 + .9 * s, filter: `brightness(${1 + .8 * s})`, offset: .06 }, { opacity: .3, scale: 1, filter: 'brightness(1)' }],
       { duration: 200 + 200 * s, easing: 'cubic-bezier(.1,.9,.3,1)', composite: 'replace' }); }
   const ml = document.querySelector('.mlogo');
-  function logo(s) { if (!ml) return; const p = Math.min(1, .55 + .6 * s), gl = 8 + 22 * s;
-    ml.animate([{ opacity: 0, filter: 'brightness(1) drop-shadow(0 0 0 rgba(255,255,255,0))' },
-      { opacity: p, filter: `brightness(${1.2 + .5 * s}) drop-shadow(0 0 ${gl}px rgba(255,240,215,.75))`, offset: .07 },
-      { opacity: p * .35, filter: 'brightness(1) drop-shadow(0 0 6px rgba(255,240,215,.3))', offset: .4 },
-      { opacity: 0, filter: 'brightness(1) drop-shadow(0 0 0 rgba(255,255,255,0))' }],
+  function logo(s) { if (!ml) return; const p = Math.min(1, .6 + .5 * s), gl = 10 + 24 * s, d = 'drop-shadow(0 0 0 rgba(90,0,8,0))';
+    ml.animate([{ opacity: 0, filter: `brightness(1) ${d} ${d}` },
+      { opacity: p * .7, filter: `brightness(1.25) drop-shadow(0 0 ${gl * .4}px rgba(160,0,10,.9)) drop-shadow(0 0 ${gl}px rgba(110,0,12,.8))`, offset: .04 },
+      { opacity: p * .35, filter: `brightness(1.1) drop-shadow(0 0 ${gl * .4}px rgba(150,0,10,.7)) drop-shadow(0 0 ${gl}px rgba(100,0,12,.6))`, offset: .07 },
+      { opacity: p, filter: `brightness(1.3) drop-shadow(0 0 ${gl * .4}px rgba(170,0,12,.95)) drop-shadow(0 0 ${gl * 1.3}px rgba(100,0,14,.85))`, offset: .1 },
+      { opacity: p * .4, filter: `brightness(1) drop-shadow(0 0 4px rgba(120,0,10,.5)) drop-shadow(0 0 ${gl * .8}px rgba(70,0,10,.4))`, offset: .42 },
+      { opacity: 0, filter: `brightness(1) ${d} ${d}` }],
       { duration: 900 + 900 * s, easing: 'cubic-bezier(.2,.7,.3,1)', composite: 'replace' }); }
   if (force) { fl.style.opacity = .4; al.style.opacity = .18; return; }
   let hits = null, idx = 0, lastT = 0, entered = false;
