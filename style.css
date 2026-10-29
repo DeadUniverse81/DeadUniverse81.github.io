@@ -169,3 +169,12 @@ body.entered .stage>.wmt{opacity:1}
 /* v37: ENTER centered in the lower arm of the cross window, more legible */
 #enter{color:#f0c060;border-color:rgba(240,192,96,.75);background:rgba(0,0,0,.45);font-size:.9rem;text-shadow:0 0 10px rgba(240,192,96,.7);box-shadow:0 0 18px rgba(217,164,65,.18)}
 @media (min-aspect-ratio:4/3) and (min-width:701px){#enter{position:absolute!important;left:50%;top:calc(50svh + .225*max(100svh,56.25vw));bottom:auto!important;transform:translate(-50%,-50%)}}
+/* v37: streaming platform row */
+.track .plat{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:.6rem}
+.track .plat a.pl{display:inline-flex;align-items:center;justify-content:center;width:2.1rem;height:2.1rem;border:1px solid rgba(217,164,65,.3);opacity:.75;transition:opacity .3s,border-color .3s,box-shadow .3s}
+.track .plat a.pl:hover,.track .plat a.pl:focus-visible{opacity:1;border-color:var(--gold);box-shadow:0 0 12px rgba(217,164,65,.2)}
+.track .plat a.pl svg{width:1.05rem;height:1.05rem;fill:var(--gold)}
+.track .plat a.lnk{display:inline-flex;align-items:center;gap:.5em;padding:.45em .9em;border:1px solid rgba(217,164,65,.35);color:var(--bone);opacity:.75;text-decoration:none;font-family:'Michroma',sans-serif;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase}
+.track .plat a.lnk:hover{opacity:1;border-color:var(--gold)}
+.track .plat a.lnk svg{width:1.05rem;height:1.05rem;fill:var(--gold)}
+@media (max-width:600px){.track .plat a.pl{width:2.4rem;height:2.4rem}.track .plat a.lnk{font-size:.55rem;letter-spacing:.08em;padding:.6em .75em}}

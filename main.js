@@ -1,20 +1,20 @@
 // ---- Tracks: add new entries here (see README) ----
 const TRACKS = [
-  { title: "Rewritten by Light", year: 2026, cover: "assets/covers/rewritten_by_light.jpg", preview: "assets/tracks/rewritten_by_light.mp3",
+  { stream: {"spotify": "https://open.spotify.com/album/6Y90VZKQp7oHzbVDsFJxqF", "apple": "https://music.apple.com/us/album/rewritten-by-light/6826907103?i=6826907104", "deezer": "https://www.deezer.com/track/4370428611", "all": "https://distrokid.com/hyperfollow/deaduniverse/rewritten-by-light"}, title: "Rewritten by Light", year: 2026, cover: "assets/covers/rewritten_by_light.jpg", preview: "assets/tracks/rewritten_by_light.mp3",
     links: { youtube: "https://www.youtube.com/watch?v=AVtK1Isjh_c", soundcloud: "https://soundcloud.com/refused-1/rewritten-by-light" } },
-  { title: "Erased by Light", year: 2026, cover: "assets/covers/erased_by_light.jpg", preview: "assets/tracks/erased_by_light.mp3",
+  { stream: {"spotify": "https://open.spotify.com/album/5fPeB4Pe5xrTWuNqfDFBQp", "apple": "https://music.apple.com/us/album/erased-by-light/6824302828?i=6824302829", "deezer": "https://www.deezer.com/track/4355829222", "all": "https://distrokid.com/hyperfollow/deaduniverse/erase-by-light"}, title: "Erased by Light", year: 2026, cover: "assets/covers/erased_by_light.jpg", preview: "assets/tracks/erased_by_light.mp3",
     links: { youtube: "https://www.youtube.com/watch?v=iFYff9YwKm0", soundcloud: "https://soundcloud.com/refused-1/erased-by-light-01-weekend-022" } },
-  { title: "Ashes in My Veins", year: 2026, cover: "assets/covers/ashes_in_my_veins.jpg", preview: "assets/tracks/ashes_in_my_veins.mp3",
+  { stream: {"spotify": "https://open.spotify.com/album/1Ne4FZqvPvIixY5lD03g9v", "apple": "https://music.apple.com/us/album/ashes-in-my-veins/6823783637?i=6823783638", "deezer": "https://www.deezer.com/track/4353453552", "all": "https://distrokid.com/hyperfollow/deaduniverse/ashes-in-my-veins"}, title: "Ashes in My Veins", year: 2026, cover: "assets/covers/ashes_in_my_veins.jpg", preview: "assets/tracks/ashes_in_my_veins.mp3",
     links: { youtube: "https://www.youtube.com/watch?v=DcL-ZKZnhv0", soundcloud: "https://soundcloud.com/refused-1/ashes-in-my-veins-1-muse-eq" } },
-  { title: "The Monolith", year: 2026, cover: "assets/covers/the_monolith.jpg", preview: "assets/tracks/the_monolith.mp3",
+  { stream: {"spotify": "https://open.spotify.com/album/0UfDsJZ857CiIa2zwdBdEm", "apple": "https://music.apple.com/us/album/the-monolith-alpha-version/1893746977?i=1893746979", "deezer": "https://www.deezer.com/track/3963317601", "iheart": "https://www.iheart.com/artist/id-48725720/albums/id-394594739", "all": "https://distrokid.com/hyperfollow/deaduniverse/the-monolith-alpha-version"}, title: "The Monolith", year: 2026, cover: "assets/covers/the_monolith.jpg", preview: "assets/tracks/the_monolith.mp3",
     links: { youtube: "https://www.youtube.com/watch?v=ovm1lZ5976s", soundcloud: "https://soundcloud.com/refused-1/the-monolith-alpha-version" } },
   { title: "The Oblivion", year: 2026, cover: "assets/covers/the_oblivion.jpg", preview: "assets/tracks/the_oblivion.mp3",
     links: { youtube: "https://www.youtube.com/watch?v=2Q01_zhEoL4", soundcloud: "https://soundcloud.com/refused-1/oblivion-alpha-version" } },
-  { title: "b4bYLon", year: 2026, cover: "assets/covers/b4bylon.jpg", preview: "assets/tracks/b4bylon.mp3",
+  { stream: {"spotify": "https://open.spotify.com/album/0TqRAtYOFdTVfnuDSHtxCI", "apple": "https://music.apple.com/us/album/b4bylon/1871736803?i=1871736805", "deezer": "https://www.deezer.com/track/3794861372", "iheart": "https://www.iheart.com/artist/id-48725720/albums/id-375600718", "all": "https://distrokid.com/hyperfollow/deaduniverse/b4bylon"}, title: "b4bYLon", year: 2026, cover: "assets/covers/b4bylon.jpg", preview: "assets/tracks/b4bylon.mp3",
     links: { youtube: "https://www.youtube.com/watch?v=ut_Tawd4zdE", soundcloud: "https://soundcloud.com/refused-1/b4bylon" } },
-  { title: "Burn the World Down", year: 2026, cover: "assets/covers/burn_the_world_down.jpg", preview: "assets/tracks/burn_the_world_down.mp3",
+  { stream: {"spotify": "https://open.spotify.com/album/63igpIJXszhaylfHUn6m2p", "apple": "https://music.apple.com/us/album/burn-the-world-down/6789880414?i=6789880415", "deezer": "https://www.deezer.com/track/4147560652", "iheart": "https://www.iheart.com/artist/id-48725720/albums/id-415971519", "all": "https://distrokid.com/hyperfollow/deaduniverse/burn-the-world-down"}, title: "Burn the World Down", year: 2026, cover: "assets/covers/burn_the_world_down.jpg", preview: "assets/tracks/burn_the_world_down.mp3",
     links: { youtube: "https://www.youtube.com/watch?v=yRFk82_a2Kk", soundcloud: "https://soundcloud.com/refused-1/burn-the-world-down" } },
-  { title: "Lift Me Up", year: 2026, cover: "assets/covers/lift_me_up.jpg", preview: "assets/tracks/lift_me_up.mp3",
+  { stream: {"spotify": "https://open.spotify.com/album/59Sz1HPFYhqaP9zeHtTOnC", "apple": "https://music.apple.com/us/album/lift-me-up-original-version/1883848895?i=1883848896", "deezer": "https://www.deezer.com/track/3890703341", "iheart": "https://www.iheart.com/artist/id-48725720/albums/id-385915076", "all": "https://distrokid.com/hyperfollow/deaduniverse/lift-me-up-original-version"}, title: "Lift Me Up", year: 2026, cover: "assets/covers/lift_me_up.jpg", preview: "assets/tracks/lift_me_up.mp3",
     links: { youtube: "https://www.youtube.com/watch?v=pqeeRgr7104", soundcloud: "https://soundcloud.com/refused-1/lift-me-up-original-version" } },
 ];
 
@@ -47,6 +47,8 @@ function hookAnalyser(a) { try {
 } catch (e) { console.warn('analyser unavailable', e); } }
 
 // ---- Music list ----
+const SICONS = {"spotify": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 1a11 11 0 1 0 0 22 11 11 0 0 0 0-22zm5 15.9a.7.7 0 0 1-1 .2c-2.7-1.6-6-2-10-1.1a.7.7 0 1 1-.3-1.4c4.3-1 8-.6 11 1.3.4.2.5.6.3 1zm1.4-3.1a.9.9 0 0 1-1.2.3c-3-1.9-7.7-2.4-11.3-1.3a.9.9 0 1 1-.5-1.7c4.1-1.2 9.2-.6 12.7 1.5.4.3.5.8.3 1.2zm.1-3.2C14.9 8.5 8.9 8.3 5.4 9.4a1.1 1.1 0 1 1-.6-2.1c4-1.2 10.7-1 14.8 1.5a1.1 1.1 0 0 1-1.1 1.8z\"/></svg>", "apple": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20 2 8.5 4.3v11.2a3.2 3.2 0 1 0 1.8 2.9V8.6l7.9-1.6v6.6a3.2 3.2 0 1 0 1.8 2.9z\"/></svg>", "deezer": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M1 17h4v2H1zm6 0h4v2H7zm6 0h4v2h-4zm6 0h4v2h-4zM7 14h4v2H7zm6 0h4v2h-4zm6 0h4v2h-4zm-6-3h4v2h-4zm6 0h4v2h-4zm0-3h4v2h-4zm0-3h4v2h-4z\"/></svg>", "iheart": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 21.5 3.6 13.3A5.4 5.4 0 0 1 12 6.4a5.4 5.4 0 0 1 8.4 6.9z\"/></svg>", "all": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 0 1 0 16 8 8 0 0 1 0-16zm-1 4v3H8v2h3v3h2v-3h3v-2h-3V8z\"/></svg>"};
+const SNAMES = {"spotify": "Spotify", "apple": "Apple Music", "deezer": "Deezer", "iheart": "iHeartRadio", "all": "All platforms"};
 const ICONS = {"youtube": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.4-1.6.5-4.8.5-4.8s0-3.2-.5-4.8zM9.7 15.1V8.9l5.8 3.1z\"/></svg>", "soundcloud": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M1 14.5h.9v3.3H1zm1.8-1.3h.9v4.6h-.9zm1.8-.8h.9v5.4h-.9zm1.8-.4h.9v5.8h-.9zm1.8-1.4h.9v7.2h-.9zm1.8-1.5h.9v8.7h-.9zm1.8-1.3c.5-.2 1.1-.3 1.6-.3a5.1 5.1 0 0 1 5.1 4.6 2.9 2.9 0 0 1 .9-.1 3 3 0 0 1 0 6h-7.6z\"/></svg>"};
 const LABELS = { spotify: 'Spotify', youtube: 'YouTube', bandcamp: 'Bandcamp', apple: 'Apple Music', soundcloud: 'SoundCloud' };
 let current = null;
@@ -76,7 +78,7 @@ TRACKS.forEach(t => {
   const links = Object.entries(t.links || {}).filter(([, u]) => u);
   el.innerHTML = (t.cover ? `<img src="${t.cover}" alt="${t.title} cover" loading="lazy">` : `<div class="nocover"></div>`) +
     `<div class="meta"><h3>${t.title}</h3><div class="year">${t.year || ''}</div>` +
-    `<div class="links">${links.length ? links.map(([k, u]) => `<a class="lnk" href="${u}" target="_blank" rel="noopener">${ICONS[k] || ''}<span>${LABELS[k] || k}</span></a>`).join('') : '<span class="soon">Links coming soon</span>'}</div></div>`;
+    `<div class="links">${links.length ? links.map(([k, u]) => `<a class="lnk" href="${u}" target="_blank" rel="noopener">${ICONS[k] || ''}<span>${LABELS[k] || k}</span></a>`).join('') : '<span class="soon">Links coming soon</span>'}</div>${t.stream ? `<div class="plat">${Object.entries(t.stream).filter(([k])=>k!=='all').map(([k,u])=>`<a class="pl" href="${u}" target="_blank" rel="noopener" title="${SNAMES[k]}" aria-label="${SNAMES[k]}">${SICONS[k]}</a>`).join('')}${t.stream.all?`<a class="lnk pall" href="${t.stream.all}" target="_blank" rel="noopener">${SICONS.all}<span>All platforms</span></a>`:''}</div>` : ''}</div>`;
   if (t.preview) {
     // Track player: intro fades out & pauses, body.track-playing set, window.DU.analyser exposed for visuals
     const a = new Audio(); a.preload = 'metadata'; a.src = t.preview;
