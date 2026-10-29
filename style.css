@@ -124,3 +124,18 @@ body.track-playing #hero{background:transparent!important}
 
 /* motto screen: logo emerges from the void on intro bass hits */
 .mlogo{position:absolute;left:50%;bottom:100%;width:min(78vw,max(46vw,300px),1600px);height:auto;transform:translateX(-50%);margin-bottom:clamp(1.6rem,6vh,4.5rem);opacity:0;pointer-events:none;user-select:none;will-change:opacity,filter}
+
+/* v30: ENTER never comes back; post-ENTER slow swirling nebula */
+#enter[hidden],body.entered #enter,body.track-playing #enter{display:none!important}
+#vizbg{background:#000!important;overflow:hidden}
+#vizbg::before{content:'';position:absolute;inset:-12%;background:url(assets/neb_notext_4k.jpg) center/cover no-repeat;transform:translateZ(0);will-change:transform}
+@media (max-aspect-ratio:4/3){#vizbg::before{background-image:url(assets/neb_portrait_4k.jpg)}}
+#vizbg .nf{z-index:1}
+body.entered #vizbg::before{animation:duswirl 46s ease-in-out infinite alternate}
+@keyframes duswirl{0%{transform:rotate(-6deg) scale(1.03)}50%{transform:rotate(0deg) scale(1.07)}100%{transform:rotate(6deg) scale(1.03)}}
+body.entered:not(.track-playing) #vizbg{opacity:.85}
+body.entered #hero{background:transparent!important}
+body.entered .hbg,body.entered .stage>.neb,body.entered .astro{opacity:0!important}
+body.entered .stage>.wmt{opacity:1}
+@media (max-aspect-ratio:4/3){body.entered .stage>.wmt{opacity:0}}
+@media (prefers-reduced-motion:reduce){body.entered #vizbg::before{animation-duration:120s}}

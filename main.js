@@ -32,7 +32,8 @@ function setMuted(m) {
   if (!m && ambOk && !trackOn) { amb.volume = amb.paused ? 0 : amb.volume; amb.play().catch(() => { ambOk = false; }); }
   fadeTo(target(), m ? 800 : 1500);
 }
-document.getElementById('enter').onclick = () => { document.body.classList.add('entered'); setMuted(false); document.getElementById('descent').scrollIntoView({ behavior: 'smooth' }); };
+const hideEnter = () => { const e = document.getElementById('enter'); if (e) { e.hidden = true; e.style.display = 'none'; } document.body.classList.add('entered'); };
+document.getElementById('enter').onclick = () => { hideEnter(); document.body.classList.add('entered'); setMuted(false); document.getElementById('descent').scrollIntoView({ behavior: 'smooth' }); };
 muteBtn.onclick = () => setMuted(!muted);
 
 // ---- Web Audio analyser hook: window.DU.analyser (AnalyserNode of the playing track) ----
@@ -65,7 +66,7 @@ TRACKS.forEach(t => {
     a.ontimeupdate = a.onloadedmetadata = () => { if (a.duration) bar.value = a.currentTime / a.duration * 1000; tm.textContent = `${fmt(a.currentTime)} / ${fmt(a.duration)}`; };
     bar.oninput = () => { if (a.duration) a.currentTime = bar.value / 1000 * a.duration; };
     a.onplay = () => { if (current && current !== a) current.pause(); current = a; hookAnalyser(a);
-      trackOn = true; document.body.classList.add('track-playing', 'entered'); fadeTo(0, 800); b.textContent = 'Pause'; };
+      trackOn = true; document.body.classList.add('track-playing'); hideEnter(); fadeTo(0, 800); b.textContent = 'Pause'; };
     a.onpause = a.onended = () => { b.textContent = 'Play'; if (current === a) { trackOn = false; document.body.classList.remove('track-playing');
       if (!muted && ambOk) { amb.play().catch(() => {}); fadeTo(target(), 1500); } } };
     b.onclick = () => a.paused ? a.play() : a.pause();
@@ -128,7 +129,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
       { duration: 900 + 900 * s, easing: 'cubic-bezier(.2,.7,.3,1)', composite: 'replace' }); }
   if (force) { fl.style.opacity = .4; al.style.opacity = .18; return; }
   let hits = null, idx = 0, lastT = 0, entered = false;
-  fetch('assets/bass_hits.json?v=29', { cache: 'no-cache' }).then(r => r.json()).then(d => { hits = d.hits || []; if (!hits.length) hits = null; }).catch(() => {});
+  fetch('assets/bass_hits.json?v=30', { cache: 'no-cache' }).then(r => r.json()).then(d => { hits = d.hits || []; if (!hits.length) hits = null; }).catch(() => {});
   document.getElementById('enter').addEventListener('click', () => { entered = true; });
   const synced = () => hits && ambOk && !amb.paused && !muted;
   // no random lightning: every flash comes only from the bass-hit map
@@ -150,7 +151,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
 // ---- Track visualizer: full-screen log spectrum + bass flashes on the nebula ----
 (() => {
   const cv = document.getElementById('viz'), g = cv.getContext('2d'), nf = document.querySelector('#vizbg .nf');
-  let N = 96, bins, hBar = new Float32Array(N), peak = new Float32Array(N), pv = new Float32Array(N), rp = new Float32Array(96), av = new Float32Array(96), gpk = .05, W = 0, H = 0, avg = 0, last = 0, fl = 0, idle = 0;
+  let N = 96, bins, hBar = new Float32Array(N), peak = new Float32Array(N), pv = new Float32Array(N), rp = new Float32Array(96).fill(.3), av = new Float32Array(96), gpk = .05, W = 0, H = 0, avg = 0, last = 0, fl = 0, idle = 0;
   function rs() { const d = Math.min(devicePixelRatio || 1, 3840 / Math.max(1, innerWidth)); W = cv.width = Math.round(innerWidth * d); H = cv.height = Math.round(innerHeight * d); N = Math.max(40, Math.min(96, Math.round(innerWidth / 14))); }
   addEventListener('resize', rs); rs();
   function frame(t) {
@@ -167,7 +168,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
     avg += (e - avg) * .05;
     if (on && !still && e > avg * 1.18 + .04 && e > .35 && t - last > 140) { last = t; fl = Math.min(1, (e - avg) * 4 + .3); }
     fl *= .88; nf.style.opacity = fl.toFixed(3);
-    const f0 = 30, f1 = 16000, bw = W / N, cy = H * .62;
+    const f0 = 70, f1 = 16500, bw = W / N, cy = H * .62;
     const grd = g.createLinearGradient(0, cy - H * .55, 0, cy);
     grd.addColorStop(0, 'rgba(232,226,212,.7)'); grd.addColorStop(.45, 'rgba(217,164,65,.45)'); grd.addColorStop(1, 'rgba(217,164,65,.08)');
     g.shadowColor = 'rgba(217,164,65,.6)'; g.shadowBlur = 18 * (W / 1920);
