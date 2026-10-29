@@ -11,7 +11,7 @@ const TRACKS = [
   { title: "The Oblivion", year: 2026, cover: "assets/covers/the_oblivion.jpg", preview: "assets/tracks/the_oblivion.mp3",
     links: { youtube: "https://www.youtube.com/watch?v=2Q01_zhEoL4", soundcloud: "https://soundcloud.com/refused-1/oblivion-alpha-version" } },
   { title: "b4bYLon", year: 2026, cover: "assets/covers/b4bylon.jpg", preview: "assets/tracks/b4bylon.mp3",
-    links: { youtube: "https://www.youtube.com/watch?v=KmJiMSGm8Fo", soundcloud: "https://soundcloud.com/refused-1/b4bylon-remastered-edition" } },
+    links: { youtube: "https://www.youtube.com/watch?v=ut_Tawd4zdE", soundcloud: "https://soundcloud.com/refused-1/b4bylon" } },
   { title: "Burn the World Down", year: 2026, cover: "assets/covers/burn_the_world_down.jpg", preview: "assets/tracks/burn_the_world_down.mp3",
     links: { youtube: "https://www.youtube.com/watch?v=yRFk82_a2Kk", soundcloud: "https://soundcloud.com/refused-1/burn-the-world-down" } },
   { title: "Lift Me Up", year: 2026, cover: "assets/covers/lift_me_up.jpg", preview: "assets/tracks/lift_me_up.mp3",
