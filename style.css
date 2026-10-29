@@ -134,8 +134,10 @@ body.track-playing #hero{background:transparent!important}
 body.entered #vizbg::before{animation:duswirl 46s ease-in-out infinite alternate}
 @keyframes duswirl{0%{transform:rotate(-6deg) scale(1.03)}50%{transform:rotate(0deg) scale(1.07)}100%{transform:rotate(6deg) scale(1.03)}}
 body.entered:not(.track-playing) #vizbg{opacity:.85}
+/* v36: after ENTER the cross window + astronaut stay; only the ink around them swirls (masked) */
 body.entered #hero{background:transparent!important}
-body.entered .hbg,body.entered .stage>.neb,body.entered .astro{opacity:0!important}
+body.entered .stage>.neb{opacity:0!important}
+body.entered .hbg{-webkit-mask:url(assets/cross_mask.png) center/100% 100% no-repeat;mask:url(assets/cross_mask.png) center/100% 100% no-repeat}
 body.entered .stage>.wmt{opacity:1}
 @media (max-aspect-ratio:4/3){body.entered .stage>.wmt{opacity:0}}
 @media (prefers-reduced-motion:reduce){body.entered #vizbg::before{animation-duration:120s}}
