@@ -14,6 +14,8 @@ const TRACKS = [
     links: {} },
   { title: "Burn the World Down", year: 2026, cover: "assets/covers/burn_the_world_down.jpg", preview: "assets/tracks/burn_the_world_down.mp3",
     links: {} },
+  { title: "Lift Me Up", year: 2026, cover: "assets/covers/lift_me_up.jpg", preview: "assets/tracks/lift_me_up.mp3",
+    links: {} },
 ];
 
 const amb = document.getElementById('ambient'), muteBtn = document.getElementById('mute');
