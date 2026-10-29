@@ -6,6 +6,10 @@ const TRACKS = [
     links: {} },
   { title: "Ashes in My Veins", year: 2026, cover: "assets/covers/ashes_in_my_veins.jpg", preview: "assets/tracks/ashes_in_my_veins.mp3",
     links: {} },
+  { title: "The Monolith", year: 2026, cover: "assets/covers/the_monolith.jpg", preview: "assets/tracks/the_monolith.mp3",
+    links: {} },
+  { title: "The Oblivion", year: 2026, cover: "assets/covers/the_oblivion.jpg", preview: "assets/tracks/the_oblivion.mp3",
+    links: {} },
 ];
 
 const amb = document.getElementById('ambient'), muteBtn = document.getElementById('mute');

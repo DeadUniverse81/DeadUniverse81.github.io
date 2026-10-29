@@ -114,3 +114,10 @@ body.track-playing #hero{background:transparent!important}
 @media (min-width:2400px) and (min-height:1400px){#tracks{grid-template-columns:repeat(auto-fit,minmax(480px,600px))}}
 #music{max-width:none;padding-left:max(5vw,calc(50% - 560px));padding-right:max(5vw,calc(50% - 560px))}
 @media (min-width:2400px) and (min-height:1400px){#music{padding-left:max(5vw,calc(50% - 1000px));padding-right:max(5vw,calc(50% - 1000px))}}
+#music{padding-left:max(5vw,calc(50% - 640px));padding-right:max(5vw,calc(50% - 640px))}#tracks{grid-template-columns:repeat(auto-fit,minmax(220px,290px))}
+@media (max-width:600px){#tracks{grid-template-columns:repeat(auto-fit,minmax(240px,340px))}}
+@media (min-width:2400px) and (min-height:1400px){#music{padding-left:max(5vw,calc(50% - 1050px));padding-right:max(5vw,calc(50% - 1050px))}#tracks{grid-template-columns:repeat(auto-fit,minmax(420px,480px))}}
+/* v18: flex grid, last row centred */
+#tracks{display:flex;flex-wrap:wrap;justify-content:center;gap:2rem}
+#tracks>.track{flex:0 1 330px;min-width:0}
+@media (min-width:2400px) and (min-height:1400px){#tracks>.track{flex-basis:620px}}
