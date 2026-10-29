@@ -12,6 +12,8 @@ const TRACKS = [
     links: {} },
   { title: "b4bYLon", year: 2026, cover: "assets/covers/b4bylon.jpg", preview: "assets/tracks/b4bylon.mp3",
     links: {} },
+  { title: "Burn the World Down", year: 2026, cover: "assets/covers/burn_the_world_down.jpg", preview: "assets/tracks/burn_the_world_down.mp3",
+    links: {} },
 ];
 
 const amb = document.getElementById('ambient'), muteBtn = document.getElementById('mute');
