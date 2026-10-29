@@ -128,7 +128,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
       { duration: 900 + 900 * s, easing: 'cubic-bezier(.2,.7,.3,1)', composite: 'replace' }); }
   if (force) { fl.style.opacity = .4; al.style.opacity = .18; return; }
   let hits = null, idx = 0, lastT = 0, entered = false;
-  fetch('assets/bass_hits.json?v=27', { cache: 'no-cache' }).then(r => r.json()).then(d => { hits = d.hits || []; if (!hits.length) hits = null; }).catch(() => {});
+  fetch('assets/bass_hits.json?v=28', { cache: 'no-cache' }).then(r => r.json()).then(d => { hits = d.hits || []; if (!hits.length) hits = null; }).catch(() => {});
   document.getElementById('enter').addEventListener('click', () => { entered = true; });
   const synced = () => hits && ambOk && !amb.paused && !muted;
   // no random lightning: every flash comes only from the bass-hit map
