@@ -166,3 +166,6 @@ body.entered .stage>.wmt{opacity:1}
 .track .links a.lnk svg{width:1.15rem;height:1.15rem;fill:var(--gold)}
 @media (max-width:600px){.track .links a.lnk{font-size:.62rem;padding:.6em 1em}}
 @media (max-width:600px){.track .links{gap:.5rem}.track .links a.lnk{font-size:.55rem;letter-spacing:.08em;padding:.6em .75em}}
+/* v37: ENTER centered in the lower arm of the cross window, more legible */
+#enter{color:#f0c060;border-color:rgba(240,192,96,.75);background:rgba(0,0,0,.45);font-size:.9rem;text-shadow:0 0 10px rgba(240,192,96,.7);box-shadow:0 0 18px rgba(217,164,65,.18)}
+@media (min-aspect-ratio:4/3) and (min-width:701px){#enter{position:absolute!important;left:50%;top:calc(50svh + .225*max(100svh,56.25vw));bottom:auto!important;transform:translate(-50%,-50%)}}
