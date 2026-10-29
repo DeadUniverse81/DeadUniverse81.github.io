@@ -18,7 +18,7 @@ function setMuted(m) {
   if (!m && ambOk && !trackOn) { amb.volume = amb.paused ? 0 : amb.volume; amb.play().catch(() => { ambOk = false; }); }
   fadeTo(target(), m ? 800 : 1500);
 }
-document.getElementById('enter').onclick = () => { setMuted(false); document.getElementById('descent').scrollIntoView({ behavior: 'smooth' }); };
+document.getElementById('enter').onclick = () => { document.body.classList.add('entered'); setMuted(false); document.getElementById('descent').scrollIntoView({ behavior: 'smooth' }); };
 muteBtn.onclick = () => setMuted(!muted);
 
 // ---- Web Audio analyser hook: window.DU.analyser (AnalyserNode of the playing track) ----
@@ -51,7 +51,7 @@ TRACKS.forEach(t => {
     a.ontimeupdate = a.onloadedmetadata = () => { if (a.duration) bar.value = a.currentTime / a.duration * 1000; tm.textContent = `${fmt(a.currentTime)} / ${fmt(a.duration)}`; };
     bar.oninput = () => { if (a.duration) a.currentTime = bar.value / 1000 * a.duration; };
     a.onplay = () => { if (current && current !== a) current.pause(); current = a; hookAnalyser(a);
-      trackOn = true; document.body.classList.add('track-playing'); fadeTo(0, 800); b.textContent = 'Pause'; };
+      trackOn = true; document.body.classList.add('track-playing', 'entered'); fadeTo(0, 800); b.textContent = 'Pause'; };
     a.onpause = a.onended = () => { b.textContent = 'Play'; if (current === a) { trackOn = false; document.body.classList.remove('track-playing');
       if (!muted && ambOk) { amb.play().catch(() => {}); fadeTo(target(), 1500); } } };
     b.onclick = () => a.paused ? a.play() : a.pause();
