@@ -184,3 +184,9 @@ body.entered .stage>.wmt{opacity:1}
 .track .player button.rep.on{opacity:1;border-color:var(--gold);background:rgba(217,164,65,.18);box-shadow:0 0 14px rgba(217,164,65,.45)}
 .track .player button.rep.on svg{fill:var(--gold);stroke:none;filter:drop-shadow(0 0 4px rgba(240,192,96,.8))}
 @media (max-width:600px){.track .player button.rep{width:2.4rem;height:2.4rem}}
+/* v40: player row always fits inside the card */
+.track .player{gap:.5rem;min-width:0;max-width:100%;flex-wrap:nowrap}
+.track .player>button{flex:none}
+.track .seek{flex:1 1 auto;min-width:0;width:auto}
+.track .tm{flex:none;font-size:.62rem;letter-spacing:0}
+@container (max-width:240px){.track .player{flex-wrap:wrap}.track .tm{flex-basis:100%;text-align:right}}
