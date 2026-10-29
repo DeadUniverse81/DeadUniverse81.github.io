@@ -19,7 +19,7 @@ const TRACKS = [
 ];
 
 const amb = document.getElementById('ambient'), muteBtn = document.getElementById('mute');
-const AMB_VOL = 0.65; let muted = true, ducked = false, trackOn = false, ambOk = true, fadeT;
+const AMB_VOL = 0.5; let muted = true, ducked = false, trackOn = false, ambOk = true, fadeT;
 amb.addEventListener('error', () => { ambOk = false; muteBtn.title = 'Ambient track not available yet'; });
 function fadeTo(v, ms = 2000) {
   clearInterval(fadeT); const s = amb.volume, t0 = performance.now();
@@ -40,7 +40,7 @@ window.DU = window.DU || {};
 const _srcs = new WeakMap(); let _ctx;
 function hookAnalyser(a) { try {
   _ctx = _ctx || new (window.AudioContext || window.webkitAudioContext)(); _ctx.resume();
-  if (!DU.analyser) { DU.analyser = _ctx.createAnalyser(); DU.analyser.fftSize = 2048; DU.analyser.connect(_ctx.destination); DU.ctx = _ctx; }
+  if (!DU.analyser) { DU.analyser = _ctx.createAnalyser(); DU.analyser.fftSize = 2048; DU.analyser.smoothingTimeConstant = .75; DU.analyser.connect(_ctx.destination); DU.ctx = _ctx; }
   if (!_srcs.has(a)) { const s = _ctx.createMediaElementSource(a); s.connect(DU.analyser); _srcs.set(a, s); }
   DU.current = a;
 } catch (e) { console.warn('analyser unavailable', e); } }
@@ -128,7 +128,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
       { duration: 900 + 900 * s, easing: 'cubic-bezier(.2,.7,.3,1)', composite: 'replace' }); }
   if (force) { fl.style.opacity = .4; al.style.opacity = .18; return; }
   let hits = null, idx = 0, lastT = 0, entered = false;
-  fetch('assets/bass_hits.json?v=28', { cache: 'no-cache' }).then(r => r.json()).then(d => { hits = d.hits || []; if (!hits.length) hits = null; }).catch(() => {});
+  fetch('assets/bass_hits.json?v=29', { cache: 'no-cache' }).then(r => r.json()).then(d => { hits = d.hits || []; if (!hits.length) hits = null; }).catch(() => {});
   document.getElementById('enter').addEventListener('click', () => { entered = true; });
   const synced = () => hits && ambOk && !amb.paused && !muted;
   // no random lightning: every flash comes only from the bass-hit map
@@ -150,7 +150,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
 // ---- Track visualizer: full-screen log spectrum + bass flashes on the nebula ----
 (() => {
   const cv = document.getElementById('viz'), g = cv.getContext('2d'), nf = document.querySelector('#vizbg .nf');
-  let N = 96, bins, hBar = new Float32Array(N), peak = new Float32Array(N), pv = new Float32Array(N), W = 0, H = 0, avg = 0, last = 0, fl = 0, idle = 0;
+  let N = 96, bins, hBar = new Float32Array(N), peak = new Float32Array(N), pv = new Float32Array(N), rp = new Float32Array(96), av = new Float32Array(96), gpk = .05, W = 0, H = 0, avg = 0, last = 0, fl = 0, idle = 0;
   function rs() { const d = Math.min(devicePixelRatio || 1, 3840 / Math.max(1, innerWidth)); W = cv.width = Math.round(innerWidth * d); H = cv.height = Math.round(innerHeight * d); N = Math.max(40, Math.min(96, Math.round(innerWidth / 14))); }
   addEventListener('resize', rs); rs();
   function frame(t) {
@@ -171,13 +171,18 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
     const grd = g.createLinearGradient(0, cy - H * .55, 0, cy);
     grd.addColorStop(0, 'rgba(232,226,212,.7)'); grd.addColorStop(.45, 'rgba(217,164,65,.45)'); grd.addColorStop(1, 'rgba(217,164,65,.08)');
     g.shadowColor = 'rgba(217,164,65,.6)'; g.shadowBlur = 18 * (W / 1920);
+    let gmax = 0;
     for (let i = 0; i < N; i++) {
       const a = f0 * Math.pow(f1 / f0, i / N), b = f0 * Math.pow(f1 / f0, (i + 1) / N);
       let lo = Math.floor(a / hz), hi = Math.max(lo, Math.ceil(b / hz) - 1), m = 0;
       for (let j = lo; j <= hi && j < bins.length; j++) m = Math.max(m, bins[j]);
-      // tilt: bass/low-mid weighted down, highs lifted; soft-knee keeps headroom so bars never pin
-      const r = i / N, wt = r < .35 ? .58 + r / .35 * .34 : .92 + (r - .35) * .9;
-      let q = Math.pow(m / 255, 1.8) * wt; let v = .96 * (1 - Math.exp(-2.1 * q)) / (1 - Math.exp(-2.1));
+      // tilt (bass down, flat highs) + per-bar AGC: slow-decaying running peak per bar, coupled to the global peak
+      const r = i / N, wt = r < .3 ? .5 + r / .3 * .4 : .9 + (r - .3) * .15;
+      const q = Math.pow(m / 255, 1.7) * wt;
+      rp[i] = Math.max(q, rp[i] * .9975, .02); gmax = Math.max(gmax, rp[i]);
+      const nrm = Math.max(rp[i], gpk * .55) * 1.08, u = q / nrm;   // u ~ 1 only at a bar's recent peak
+      av[i] += (q - av[i]) * .04; const tr = Math.min(1, Math.max(0, (q - av[i]) / (.3 * nrm)));
+      let v = .6 * Math.min(1, u) + .38 * tr;   // sustained level ~40-60%, only fresh hits jump to the top
       hBar[i] = v > hBar[i] ? v : hBar[i] * .92 + v * .08;
       if (hBar[i] >= peak[i]) { peak[i] = hBar[i]; pv[i] = 0; } else { pv[i] += .0009; peak[i] = Math.max(0, peak[i] - pv[i]); }
       const h = Math.min(1, hBar[i]) * H * .55, x = i * bw + bw * .18, w = bw * .64;
@@ -185,7 +190,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
       g.fillStyle = 'rgba(217,164,65,.18)'; g.fillRect(x, cy + 2, w, h * .35); // reflection
       g.fillStyle = 'rgba(255,236,190,.9)'; g.fillRect(x, cy - Math.min(1, peak[i]) * H * .55 - 3 * (W / 1920), w, 2 * (W / 1920));
     }
-    g.shadowBlur = 0;
+    gpk = Math.max(gmax, gpk * .998); g.shadowBlur = 0;
   }
   window.__vz = () => [N, hBar];
   requestAnimationFrame(frame);
