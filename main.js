@@ -119,6 +119,13 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
   function spark(s) { if (!sg) return;
     sg.animate([{ opacity: .3, scale: 1, filter: 'brightness(1)' }, { opacity: .45 + .5 * s, scale: 1 + .9 * s, filter: `brightness(${1 + .8 * s})`, offset: .06 }, { opacity: .3, scale: 1, filter: 'brightness(1)' }],
       { duration: 200 + 200 * s, easing: 'cubic-bezier(.1,.9,.3,1)', composite: 'replace' }); }
+  const ml = document.querySelector('.mlogo');
+  function logo(s) { if (!ml) return; const p = Math.min(1, .55 + .6 * s), gl = 8 + 22 * s;
+    ml.animate([{ opacity: 0, filter: 'brightness(1) drop-shadow(0 0 0 rgba(255,255,255,0))' },
+      { opacity: p, filter: `brightness(${1.2 + .5 * s}) drop-shadow(0 0 ${gl}px rgba(255,240,215,.75))`, offset: .07 },
+      { opacity: p * .35, filter: 'brightness(1) drop-shadow(0 0 6px rgba(255,240,215,.3))', offset: .4 },
+      { opacity: 0, filter: 'brightness(1) drop-shadow(0 0 0 rgba(255,255,255,0))' }],
+      { duration: 900 + 900 * s, easing: 'cubic-bezier(.2,.7,.3,1)', composite: 'replace' }); }
   if (force) { fl.style.opacity = .4; al.style.opacity = .18; return; }
   let hits = null, idx = 0, lastT = 0, entered = false;
   fetch('assets/bass_hits.json').then(r => r.json()).then(d => { hits = d.hits || []; if (!hits.length) hits = null; }).catch(() => {});
@@ -140,7 +147,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
       lastT = t;
       while (idx < hits.length && hits[idx].t <= t) {
         const h = hits[idx++];
-        if (t - h.t < 0.12) { pulse(.14 + .4 * h.s, 140 + 200 * h.s); spark(h.s); if (dbg) console.log(`HIT t=${h.t} s=${h.s} at=${t.toFixed(3)}`); }
+        if (t - h.t < 0.12) { pulse(.14 + .4 * h.s, 140 + 200 * h.s); spark(h.s); logo(h.s); if (dbg) console.log(`HIT t=${h.t} s=${h.s} at=${t.toFixed(3)}`); }
       }
     } else if (hits && ambOk) { lastT = amb.currentTime; seek(lastT); }
     requestAnimationFrame(tick);

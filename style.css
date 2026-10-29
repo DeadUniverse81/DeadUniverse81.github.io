@@ -121,3 +121,6 @@ body.track-playing #hero{background:transparent!important}
 #tracks{display:flex;flex-wrap:wrap;justify-content:center;gap:2rem}
 #tracks>.track{flex:0 1 330px;min-width:0}
 @media (min-width:2400px) and (min-height:1400px){#tracks>.track{flex-basis:620px}}
+
+/* motto screen: logo emerges from the void on intro bass hits */
+.mlogo{position:absolute;left:50%;bottom:100%;width:min(78vw,max(46vw,300px),1600px);height:auto;transform:translateX(-50%);margin-bottom:clamp(1.6rem,6vh,4.5rem);opacity:0;pointer-events:none;user-select:none;will-change:opacity,filter}
