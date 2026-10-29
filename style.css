@@ -78,3 +78,16 @@ body.track-playing .track button{border-color:var(--gold)}
 #enter{position:absolute;left:50%;bottom:10svh;transform:translateX(-50%);z-index:5}
 #descent{height:100vh;padding-top:0}
 }
+
+/* ---- track visualizer ---- */
+#vizbg{position:fixed;inset:0;z-index:-1;background:#000 url(assets/neb_notext_4k.jpg) center/cover;opacity:0;transition:opacity 2s ease;pointer-events:none}
+#vizbg .nf{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,rgba(235,22,10,.9),rgba(120,0,0,.35) 60%,rgba(0,0,0,0) 85%);mix-blend-mode:screen;opacity:0}
+#viz{position:fixed;inset:0;width:100vw;height:100vh;height:100lvh;z-index:0;pointer-events:none;opacity:0;transition:opacity 2s ease}
+body.track-playing #vizbg{opacity:.55}body.track-playing #viz{opacity:1}
+#descent,#music,footer{position:relative;z-index:1;transition:background 2s}
+body.track-playing #descent{background:transparent}
+.stage>.neb{inset:0;opacity:0;transition:opacity 2s ease}.neb img{width:100%;height:100%;display:block}
+.hbg,.astro{transition:opacity 2s ease}
+body.track-playing .stage .neb{opacity:1}
+body.track-playing .hbg,body.track-playing .astro,body.track-playing .flash{opacity:0!important}
+#hero{z-index:1}

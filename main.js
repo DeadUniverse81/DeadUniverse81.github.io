@@ -132,3 +132,44 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
     requestAnimationFrame(tick);
   })();
 })();
+
+// ---- Track visualizer: full-screen log spectrum + bass flashes on the nebula ----
+(() => {
+  const cv = document.getElementById('viz'), g = cv.getContext('2d'), nf = document.querySelector('#vizbg .nf');
+  let N = 96, bins, hBar = new Float32Array(N), peak = new Float32Array(N), pv = new Float32Array(N), W = 0, H = 0, avg = 0, last = 0, fl = 0, idle = 0;
+  function rs() { const d = Math.min(devicePixelRatio || 1, 3840 / Math.max(1, innerWidth)); W = cv.width = Math.round(innerWidth * d); H = cv.height = Math.round(innerHeight * d); N = Math.max(40, Math.min(96, Math.round(innerWidth / 14))); }
+  addEventListener('resize', rs); rs();
+  function frame(t) {
+    requestAnimationFrame(frame);
+    const on = document.body.classList.contains('track-playing'), an = DU.analyser;
+    if (!on) { if (idle++ > 150) return; } else idle = 0;
+    g.clearRect(0, 0, W, H);
+    if (!an) return;
+    if (!bins) bins = new Uint8Array(an.frequencyBinCount);
+    if (on) an.getByteFrequencyData(bins); else for (let i = 0; i < bins.length; i++) bins[i] *= .9;
+    const ny = DU.ctx.sampleRate / 2, hz = ny / bins.length;
+    // bass onset 30-150 Hz
+    let e = 0, n = 0; for (let i = Math.max(1, Math.floor(30 / hz)); i <= Math.ceil(150 / hz); i++) { e += bins[i]; n++; } e /= n * 255;
+    avg += (e - avg) * .05;
+    if (on && !still && e > avg * 1.18 + .04 && e > .35 && t - last > 140) { last = t; fl = Math.min(1, (e - avg) * 4 + .3); }
+    fl *= .88; nf.style.opacity = fl.toFixed(3);
+    const f0 = 30, f1 = 16000, bw = W / N, cy = H * .62;
+    const grd = g.createLinearGradient(0, cy - H * .55, 0, cy);
+    grd.addColorStop(0, 'rgba(232,226,212,.7)'); grd.addColorStop(.45, 'rgba(217,164,65,.45)'); grd.addColorStop(1, 'rgba(217,164,65,.08)');
+    g.shadowColor = 'rgba(217,164,65,.6)'; g.shadowBlur = 18 * (W / 1920);
+    for (let i = 0; i < N; i++) {
+      const a = f0 * Math.pow(f1 / f0, i / N), b = f0 * Math.pow(f1 / f0, (i + 1) / N);
+      let lo = Math.floor(a / hz), hi = Math.max(lo, Math.ceil(b / hz) - 1), m = 0;
+      for (let j = lo; j <= hi && j < bins.length; j++) m = Math.max(m, bins[j]);
+      let v = Math.pow(m / 255, 1.6) * (1 + i / N * .6);
+      hBar[i] = v > hBar[i] ? v : hBar[i] * .92 + v * .08;
+      if (hBar[i] >= peak[i]) { peak[i] = hBar[i]; pv[i] = 0; } else { pv[i] += .0009; peak[i] = Math.max(0, peak[i] - pv[i]); }
+      const h = Math.min(1, hBar[i]) * H * .55, x = i * bw + bw * .18, w = bw * .64;
+      g.fillStyle = grd; g.fillRect(x, cy - h, w, h);
+      g.fillStyle = 'rgba(217,164,65,.18)'; g.fillRect(x, cy + 2, w, h * .35); // reflection
+      g.fillStyle = 'rgba(255,236,190,.9)'; g.fillRect(x, cy - Math.min(1, peak[i]) * H * .55 - 3 * (W / 1920), w, 2 * (W / 1920));
+    }
+    g.shadowBlur = 0;
+  }
+  requestAnimationFrame(frame);
+})();
