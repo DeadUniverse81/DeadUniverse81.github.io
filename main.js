@@ -19,7 +19,7 @@ const TRACKS = [
 ];
 
 const amb = document.getElementById('ambient'), muteBtn = document.getElementById('mute');
-const AMB_VOL = 0.5; let muted = true, ducked = false, trackOn = false, ambOk = true, fadeT;
+const AMB_VOL = 0.65; let muted = true, ducked = false, trackOn = false, ambOk = true, fadeT;
 amb.addEventListener('error', () => { ambOk = false; muteBtn.title = 'Ambient track not available yet'; });
 function fadeTo(v, ms = 2000) {
   clearInterval(fadeT); const s = amb.volume, t0 = performance.now();
