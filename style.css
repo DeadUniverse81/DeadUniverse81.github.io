@@ -205,3 +205,7 @@ body.track-playing #fcover{opacity:.2;animation:cfloat 24s ease-in-out infinite}
 .track h3.glitch{position:relative;color:#c4101c;text-shadow:-3px 0 rgba(255,0,40,.85),3px 0 rgba(0,200,255,.35);animation:gl .13s steps(3) 1}
 @keyframes gl{0%{transform:translate(2px,-1px) skewX(-8deg);clip-path:inset(0 0 40% 0)}50%{transform:translate(-3px,1px) skewX(6deg);clip-path:inset(30% 0 0 0)}100%{transform:none;clip-path:none}}
 @media (prefers-reduced-motion:reduce){body.track-playing #fcover{animation:none}#descent .fog{transform:none!important}}
+/* v42: fog never covers the analyzer/cover during playback */
+#descent .fog{transition:opacity .9s ease}
+body.track-playing #descent .fog{opacity:0!important}
+body.track-playing #descent,body.track-playing #music,body.track-playing footer{background:transparent!important}
