@@ -336,3 +336,5 @@ body.cm-admin .cm-mod button{padding:.15em .5em;font-size:.55rem;border-color:rg
 .cm-compose[hidden],.cm [hidden]{display:none!important}
 .cm-modal input{flex:none;width:100%;box-sizing:border-box}
 .cm-modal .cm-box{box-sizing:border-box;max-width:calc(100vw - 2rem)}
+/* v50: contain drifting fog horizontally */
+#descent{overflow-x:clip}
