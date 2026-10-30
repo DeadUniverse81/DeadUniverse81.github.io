@@ -17,12 +17,12 @@ const clean = s => BAD.reduce((t, w) => t.replace(new RegExp(w, 'gi'), m => m[0]
 const modal = $('#cm-modal'), form = $('#cm-form'), msg = $('#cm-msg');
 let mode = 'in';
 function setMode(m) { mode = m; modal.dataset.mode = m; msg.textContent = '';
-  $('#cm-title').textContent = { in: 'Sign in', up: 'Create account', reset: 'Reset password' }[m];
+  $('#cm-title').textContent = { in: 'Sign in', up: 'Create account', reset: 'Reset password', sent: 'Almost there' }[m];
   $('#cm-go').textContent = { in: 'Enter', up: 'Join', reset: 'Send link' }[m]; }
 const openM = m => { setMode(m); modal.hidden = false; setTimeout(() => form.querySelector('input:not([hidden])')?.focus(), 50); };
 const closeM = () => { modal.hidden = true; };
 document.addEventListener('click', e => { const a = e.target.closest('[data-cm]'); if (!a) return; e.preventDefault();
-  const k = a.dataset.cm; if (k === 'out') signOut(auth); else if (k === 'close') closeM(); else if (k === 'verify') verifyCheck(); else if (k === 'resend') me && sendEmailVerification(me).then(() => toast('Verification email sent.')); else openM(k); });
+  const k = a.dataset.cm; if (k === 'out') signOut(auth); else if (k === 'close') closeM(); else if (k === 'verify') verifyCheck(); else if (k === 'resend') resend(); else openM(k); });
 modal.addEventListener('click', e => { if (e.target === modal) closeM(); });
 addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeM(); });
 form.addEventListener('submit', async e => { e.preventDefault(); msg.textContent = '…';
@@ -34,18 +34,24 @@ form.addEventListener('submit', async e => { e.preventDefault(); msg.textContent
       if (clean(nm) !== nm) throw { code: 'badname' };
       const c = await createUserWithEmailAndPassword(auth, em, pw);
       myName = nm; await setDoc(doc(db, 'users', c.user.uid), { name: nm, createdAt: serverTimestamp() });
-      await sendEmailVerification(c.user); closeM(); toast('Welcome. Check your inbox to verify your email.');
+      await sendEmailVerification(c.user); lastResend = Date.now(); setMode('sent'); msg.innerHTML = `<span class="cm-spam"><b class="cm-spam-t">✦ Verification email sent ✦</b>Check your inbox — and your <b>SPAM / Junk</b> folder! The verification email often lands there. Click the link, then sign out and sign in again.</span>`;
     } else { await signInWithEmailAndPassword(auth, em, pw); closeM(); }
   } catch (err) { msg.textContent = ({ name: 'Display name: 2–24 characters.', badname: 'Please choose another display name.', 'auth/email-already-in-use': 'This email already has an account.', 'auth/invalid-credential': 'Wrong email or password.', 'auth/wrong-password': 'Wrong email or password.', 'auth/user-not-found': 'Wrong email or password.', 'auth/weak-password': 'Password: at least 6 characters.', 'auth/invalid-email': 'Invalid email address.', 'auth/too-many-requests': 'Too many attempts. Try again later.', 'auth/unauthorized-domain': 'Coming online soon.', 'permission-denied': 'Coming online soon.' })[err.code] || 'Something went wrong. Please try again.'; }
 });
-function toast(t) { const el = $('#cm-toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 4200); }
+let lastResend = 0;
+async function resend() { if (!me) return; const w = 60000 - (Date.now() - lastResend);
+  if (w > 0) return toast(`Please wait ${Math.ceil(w / 1000)} s before resending.`);
+  lastResend = Date.now();
+  try { await sendEmailVerification(me); toast('Verification email sent — check your Spam / Junk folder too.'); }
+  catch (e) { toast(e.code === 'auth/too-many-requests' ? 'Too many requests. Try again in a few minutes.' : 'Could not send email. Try again later.'); } }
+function toast(t, ms = 4200) { const el = $('#cm-toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
 async function verifyCheck() { if (!me) return; await me.reload(); await me.getIdToken(true); refreshUI(); toast(me.emailVerified ? 'Email verified. Welcome to the wall.' : 'Not verified yet. Check your inbox (and spam).'); }
 
 function refreshUI() {
   const v = me && me.emailVerified, bar = document.querySelectorAll('.cm-acct');
   bar.forEach(b => b.innerHTML = !me ? '<button data-cm="in">Sign in</button><button data-cm="up">Join</button>'
     : `<span class="cm-who">${esc(myName || '…')}${admin ? ' <i>ADMIN</i>' : ''}</span><button data-cm="out">Sign out</button>`
-      + (!v ? `<p class="cm-note">Verify your email to post. <a href="#" data-cm="verify">I've verified</a> · <a href="#" data-cm="resend">Resend email</a></p>` : '')
+      + (!v ? `<div class="cm-verify"><div class="cm-vin"><b class="cm-spam-t">✦ Verify your email to post ✦</b><p>Check your inbox — and your <b>SPAM / Junk</b> folder! The verification email often lands there. Click the link, then sign out and sign in again.</p><div class="cm-vbtns"><button data-cm="verify">I've verified</button><button data-cm="resend">Resend email</button></div></div></div>` : '')
       + (banned ? '<p class="cm-note">Your account cannot post.</p>' : ''));
   const can = !!(v && !banned);
   document.querySelectorAll('.cm-compose').forEach(f => { f.hidden = !can; });
@@ -74,7 +80,7 @@ $('#chat-form').addEventListener('submit', async e => { e.preventDefault(); cons
   const wait = 5000 - (Date.now() - lastSend); if (wait > 0) return toast(`Slow down: ${Math.ceil(wait / 1000)} s`);
   lastSend = Date.now(); inp.value = '';
   try { const b = writeBatch(db); b.set(doc(db, 'rate', me.uid), { last: serverTimestamp() }); b.set(doc(collection(db, 'messages')), { uid: me.uid, name: myName, text: t.slice(0, 300), createdAt: serverTimestamp() }); await b.commit(); }
-  catch (err) { inp.value = t; toast(err.code === 'permission-denied' ? 'Could not post (verify email, wait 5 s, or coming online soon).' : 'Could not post.'); }
+  catch (err) { inp.value = t; toast(!me.emailVerified ? 'Verify your email first — check your Spam/Junk folder too.' : err.code === 'permission-denied' ? 'Could not post (wait 5 s and try again).' : 'Could not post.', 6000); }
 });
 
 // ---- FAN IDEAS ----
@@ -90,10 +96,10 @@ function renderIdeas() { if (!ilist) return; if (ideas === null) { ilist.innerHT
 $('#idea-form').addEventListener('submit', async e => { e.preventDefault(); const f = e.target, ti = f.title.value.trim(), de = f.desc.value.trim();
   if (ti.length < 3) return toast('Title: at least 3 characters.');
   try { const b = writeBatch(db); b.set(doc(collection(db, 'ideas')), { uid: me.uid, name: myName, title: ti.slice(0, 80), desc: de.slice(0, 400), votes: 0, createdAt: serverTimestamp() }); await b.commit(); f.reset(); toast('Idea submitted.'); }
-  catch { toast('Could not submit (verify email or coming online soon).'); } });
+  catch { toast(me && !me.emailVerified ? 'Verify your email first — check your Spam/Junk folder too.' : 'Could not submit. Try again.', 6000); } });
 document.addEventListener('click', async e => {
   const v = e.target.closest('[data-vote]');
-  if (v) { if (!me) return openM('in'); if (!me.emailVerified) return toast('Verify your email to vote.'); const id = v.dataset.vote;
+  if (v) { if (!me) return openM('in'); if (!me.emailVerified) return toast('Verify your email first — check your Spam/Junk folder too.', 6000); const id = v.dataset.vote;
     try { const b = writeBatch(db); b.update(doc(db, 'ideas', id), { votes: increment(1) }); b.set(doc(db, 'ideas', id, 'votes', me.uid), { createdAt: serverTimestamp() }); await b.commit(); voted[id] = true; renderIdeas(); }
     catch { voted[id] = true; renderIdeas(); toast('Already voted (or coming online soon).'); } return; }
   const d = e.target.closest('[data-del]');
@@ -101,7 +107,7 @@ document.addEventListener('click', async e => {
   const bn = e.target.closest('[data-ban]');
   if (bn && admin) { if (confirm(`Ban ${bn.dataset.nm}? They will no longer be able to post or vote.`)) try { await setDoc(doc(db, 'banned', bn.dataset.ban), { name: bn.dataset.nm, at: serverTimestamp() }); toast('User banned.'); } catch { toast('Ban failed.'); } return; }
   const pv = e.target.closest('[data-poll]');
-  if (pv) { if (!me) return openM('in'); if (!me.emailVerified) return toast('Verify your email to vote.'); const [id, o] = pv.dataset.poll.split(':');
+  if (pv) { if (!me) return openM('in'); if (!me.emailVerified) return toast('Verify your email first — check your Spam/Junk folder too.', 6000); const [id, o] = pv.dataset.poll.split(':');
     try { const b = writeBatch(db); b.update(doc(db, 'polls', id), { ['c' + o]: increment(1) }); b.set(doc(db, 'polls', id, 'votes', me.uid), { opt: +o, createdAt: serverTimestamp() }); await b.commit(); pvoted[id] = +o; renderPolls(); }
     catch { toast('Already voted (or coming online soon).'); } }
 });

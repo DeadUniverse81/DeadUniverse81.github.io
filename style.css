@@ -338,3 +338,15 @@ body.cm-admin .cm-mod button{padding:.15em .5em;font-size:.55rem;border-color:rg
 .cm-modal .cm-box{box-sizing:border-box;max-width:calc(100vw - 2rem)}
 /* v50: contain drifting fog horizontally */
 #descent{overflow-x:clip}
+/* v51 verify / spam notice */
+.cm-modal[data-mode=sent] label,.cm-modal[data-mode=sent] #cm-go,.cm-modal[data-mode=sent] .cm-links{display:none}
+.cm-spam{display:block;border:1px solid rgba(217,164,65,.55);background:linear-gradient(160deg,rgba(217,164,65,.12),rgba(0,0,0,.4));padding:1.1em 1.2em;color:#f3dfa6;font-size:1.05rem;line-height:1.5;text-align:center;font-style:normal}
+.cm-spam b{color:var(--gold)}
+.cm-spam-t{display:block;font-family:Cinzel,serif;font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:.7rem;color:var(--gold);margin-bottom:.6em}
+.cm-verify{flex-basis:100%;margin:.9rem auto 0;max-width:640px;border:1px solid rgba(217,164,65,.5);background:linear-gradient(160deg,rgba(217,164,65,.1),rgba(0,0,0,.5));box-shadow:0 0 30px rgba(217,164,65,.12);padding:1rem 1.2rem;text-align:center;color:#eadcb8;font-size:1rem;line-height:1.5}
+.cm-verify p{margin:0 0 .8rem}.cm-verify p b{color:var(--gold)}
+.cm-vbtns{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+@media (max-width:600px){.cm-verify{font-size:.95rem;padding:.9rem}.cm-vbtns button{flex:1 1 130px}}
+.cm-verify{flex:0 0 100%;max-width:none;border:0;background:none;box-shadow:none;padding:0}
+.cm-vin{max-width:640px;margin:0 auto;box-sizing:border-box;border:1px solid rgba(217,164,65,.5);background:linear-gradient(160deg,rgba(217,164,65,.1),rgba(0,0,0,.5));box-shadow:0 0 30px rgba(217,164,65,.12);padding:1rem 1.2rem}
+@media (max-width:600px){.cm-vin{padding:.9rem}}
