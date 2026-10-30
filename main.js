@@ -72,7 +72,9 @@ function addLike(el, title) {
   };
   el.querySelector('.meta').appendChild(b);
 }
-const wrap = document.getElementById('tracks');
+// Latest Release config: titles listed here are moved (not duplicated) into the Latest Release section, in this order.
+const LATEST = ['Rewritten by Light'];
+const wrap = document.getElementById('tracks'), lwrap = document.getElementById('latestTracks');
 TRACKS.forEach(t => {
   const el = document.createElement('article'); el.className = 'track';
   const links = Object.entries(t.links || {}).filter(([, u]) => u);
@@ -102,7 +104,7 @@ TRACKS.forEach(t => {
     el.querySelector('.meta').appendChild(p);
   }
   addLike(el, t.title);
-  wrap.appendChild(el);
+  const li = LATEST.indexOf(t.title); if (li >= 0 && lwrap) { el.classList.add('latest'); el.style.order = li; lwrap.appendChild(el); } else wrap.appendChild(el);
 });
 
 // ---- Dust particles ----
@@ -213,7 +215,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
     fl *= .88; nf.style.opacity = fl.toFixed(3);
     const f0 = 70, f1 = 16500, bw = W / N, cy = H * .62;
     const grd = g.createLinearGradient(0, cy - H * .55, 0, cy);
-    grd.addColorStop(0, '#fff'); grd.addColorStop(.5, '#d8d0c0'); grd.addColorStop(1, '#6a5a40');
+    grd.addColorStop(0, 'rgba(232,226,212,.7)'); grd.addColorStop(.45, 'rgba(217,164,65,.45)'); grd.addColorStop(1, 'rgba(217,164,65,.08)');
     g.shadowColor = 'rgba(217,164,65,.6)'; g.shadowBlur = 18 * (W / 1920);
     let gmax = 0;
     for (let i = 0; i < N; i++) {
@@ -230,12 +232,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
       hBar[i] = v > hBar[i] ? v : hBar[i] * .92 + v * .08;
       if (hBar[i] >= peak[i]) { peak[i] = hBar[i]; pv[i] = 0; } else { pv[i] += .0009; peak[i] = Math.max(0, peak[i] - pv[i]); }
       const h = Math.min(1, hBar[i]) * H * .55, x = i * bw + bw * .18, w = bw * .64;
-      if (h > 0.5) { const mg = g.createLinearGradient(x, 0, x + w, 0);
-        mg.addColorStop(0, '#5a3d0e'); mg.addColorStop(.18, '#b8862b'); mg.addColorStop(.36, '#f7e3a1'); mg.addColorStop(.44, '#fffaf0'); mg.addColorStop(.52, '#e8c063'); mg.addColorStop(.78, '#a0711f'); mg.addColorStop(1, '#4a320b');
-        g.globalAlpha = .88; g.fillStyle = mg; g.fillRect(x, cy - h, w, h); g.globalAlpha = 1; g.shadowBlur = 0;
-        g.fillStyle = grd; g.globalCompositeOperation = 'multiply'; g.fillRect(x, cy - h, w, h); g.globalCompositeOperation = 'source-over';
-        g.fillStyle = 'rgba(255,248,225,.75)'; g.fillRect(x, cy - h, w, Math.min(h, 2.5 * (W / 1920)));
-        g.shadowBlur = 18 * (W / 1920); }
+      g.fillStyle = grd; g.fillRect(x, cy - h, w, h);
       g.fillStyle = 'rgba(217,164,65,.18)'; g.fillRect(x, cy + 2, w, h * .35); // reflection
       g.fillStyle = 'rgba(255,236,190,.9)'; g.fillRect(x, cy - Math.min(1, peak[i]) * H * .55 - 3 * (W / 1920), w, 2 * (W / 1920));
     }
