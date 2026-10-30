@@ -350,3 +350,7 @@ body.cm-admin .cm-mod button{padding:.15em .5em;font-size:.55rem;border-color:rg
 .cm-verify{flex:0 0 100%;max-width:none;border:0;background:none;box-shadow:none;padding:0}
 .cm-vin{max-width:640px;margin:0 auto;box-sizing:border-box;border:1px solid rgba(217,164,65,.5);background:linear-gradient(160deg,rgba(217,164,65,.1),rgba(0,0,0,.5));box-shadow:0 0 30px rgba(217,164,65,.12);padding:1rem 1.2rem}
 @media (max-width:600px){.cm-vin{padding:.9rem}}
+/* v52: title + like never overlap */
+.tt-row{display:flex;align-items:flex-start;gap:.7rem}
+.tt-row h3,.track.latest .tt-row h3{flex:1 1 auto;min-width:0;overflow-wrap:break-word;padding-right:0}
+.tt-row .like{position:static;flex:none;margin:-.3em -.3em 0 0}

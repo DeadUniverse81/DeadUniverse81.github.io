@@ -70,7 +70,8 @@ function addLike(el, title) {
     fetch(`${API}/hit/${NS}/${key}`, { cache: 'no-store' }).then(val).then(j => show(j.value)).catch(() => {});
     setTimeout(() => b.classList.remove('pop'), 500);
   };
-  el.querySelector('.meta').appendChild(b);
+  const h = el.querySelector('.meta h3'), row = document.createElement('div'); row.className = 'tt-row';
+  h.parentNode.insertBefore(row, h); row.append(h, b);
 }
 // Latest Release config: titles listed here are moved (not duplicated) into the Latest Release section, in this order.
 const LATEST = ['Rewritten by Light'];
