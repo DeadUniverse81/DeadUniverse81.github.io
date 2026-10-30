@@ -74,6 +74,8 @@ function addLike(el, title) {
 }
 // Latest Release config: titles listed here are moved (not duplicated) into the Latest Release section, in this order.
 const LATEST = ['Rewritten by Light'];
+// When replacing a LATEST song, put the replaced title here: it drops to the TOP of the regular list (then the normal TRACKS order follows).
+const PREV_LATEST = [];
 const wrap = document.getElementById('tracks'), lwrap = document.getElementById('latestTracks');
 TRACKS.forEach(t => {
   const el = document.createElement('article'); el.className = 'track';
@@ -104,7 +106,7 @@ TRACKS.forEach(t => {
     el.querySelector('.meta').appendChild(p);
   }
   addLike(el, t.title);
-  const li = LATEST.indexOf(t.title); if (li >= 0 && lwrap) { el.classList.add('latest'); el.style.order = li; lwrap.appendChild(el); } else wrap.appendChild(el);
+  const li = LATEST.indexOf(t.title); if (li >= 0 && lwrap) { el.classList.add('latest'); el.style.order = li; lwrap.appendChild(el); } else { const pi = PREV_LATEST.indexOf(t.title); if (pi >= 0) el.style.order = pi - PREV_LATEST.length; wrap.appendChild(el); }
 });
 
 // ---- Dust particles ----

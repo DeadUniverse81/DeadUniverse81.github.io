@@ -263,3 +263,13 @@ html{overflow-x:clip}
 .track.latest .meta{padding:1.6rem 2rem}.track.latest h3{font-size:1.35rem;letter-spacing:.3em}}
 @media (min-width:2400px) and (min-height:1400px){#latest{max-width:1500px}.track.latest{max-width:1500px}}
 .track.latest h3{padding-right:2.8rem}@media (max-width:759px){.track.latest h3{font-size:1rem;letter-spacing:.2em}}
+/* v47 divider */
+#latest{margin-bottom:5.5rem}
+.more-div{display:flex;align-items:center;gap:1.4rem;max-width:980px;margin:0 auto 3.5rem}
+.md-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,#8d9097 35%,#e9cf86 85%,#f6e3ae)}
+.md-line.r{background:linear-gradient(90deg,#f6e3ae,#e9cf86 15%,#8d9097 65%,transparent)}
+.md-txt{font-family:Cinzel,serif;font-size:.8rem;letter-spacing:.5em;text-transform:uppercase;white-space:nowrap;background:linear-gradient(100deg,#b88a35,#f6e3ae 45%,#c9c9cf 60%,#b88a35);-webkit-background-clip:text;background-clip:text;color:transparent}
+.md-txt i{font-style:normal;font-size:.6em;margin:0 .9em 0 .4em;color:#d9a441;-webkit-text-fill-color:#d9a441;vertical-align:middle}
+.md-txt i:last-child{margin:0 .4em 0 .4em}
+@media (max-width:600px){#latest{margin-bottom:4rem}.more-div{gap:.8rem;margin-bottom:2.5rem}.md-txt{font-size:.65rem;letter-spacing:.35em}}
+@media (min-width:760px){.track.latest h3{font-size:1.2rem;letter-spacing:.24em}}
