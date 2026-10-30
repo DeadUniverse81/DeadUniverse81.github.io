@@ -1,0 +1,129 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function canWrite() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && !exists(/databases/$(database)/documents/banned/$(request.auth.uid));
+    }
+    function str(v, lo, hi) { return v is string && v.size() >= lo && v.size() <= hi; }
+    function myName() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name; }
+
+    // Public profiles: display name chosen at signup
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'createdAt'])
+        && str(request.resource.data.name, 2, 24)
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // Server-side rate limit stamp (1 chat message per 5 s)
+    match /rate/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create: if canWrite() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['last'])
+        && request.resource.data.last == request.time;
+      allow update: if canWrite() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['last'])
+        && request.resource.data.last == request.time
+        && request.time > resource.data.last + duration.value(5, 's');
+      allow delete: if false;
+    }
+
+    // LIVE WALL chat
+    match /messages/{id} {
+      allow read: if true;
+      allow create: if canWrite()
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'text', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.name == myName()
+        && str(request.resource.data.text, 1, 300)
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/rate/$(request.auth.uid)).data.last == request.time;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // FAN IDEAS
+    match /ideas/{id} {
+      allow read: if true;
+      allow create: if canWrite()
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'title', 'desc', 'votes', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.name == myName()
+        && str(request.resource.data.title, 3, 80)
+        && str(request.resource.data.desc, 0, 400)
+        && request.resource.data.votes == 0
+        && request.resource.data.createdAt == request.time;
+      // upvote: only votes +1, only together with creating this user's vote doc
+      allow update: if canWrite()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+        && request.resource.data.votes == resource.data.votes + 1
+        && !exists(/databases/$(database)/documents/ideas/$(id)/votes/$(request.auth.uid))
+        && existsAfter(/databases/$(database)/documents/ideas/$(id)/votes/$(request.auth.uid));
+      allow delete: if isAdmin();
+
+      match /votes/{uid} {
+        allow read: if true;
+        allow create: if canWrite() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['createdAt'])
+          && request.resource.data.createdAt == request.time
+          && getAfter(/databases/$(database)/documents/ideas/$(id)).data.votes
+             == get(/databases/$(database)/documents/ideas/$(id)).data.votes + 1;
+        allow update, delete: if false;
+      }
+    }
+
+    // Admin polls: fields q (string), opts (list of 2-4 strings), c0..c3 (ints), createdAt
+    match /polls/{id} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['q', 'opts', 'c0', 'c1', 'c2', 'c3', 'createdAt'])
+        && str(request.resource.data.q, 3, 140)
+        && request.resource.data.opts is list
+        && request.resource.data.opts.size() >= 2 && request.resource.data.opts.size() <= 4
+        && request.resource.data.c0 == 0 && request.resource.data.c1 == 0
+        && request.resource.data.c2 == 0 && request.resource.data.c3 == 0
+        && request.resource.data.createdAt == request.time;
+      allow update: if canWrite()
+        && !exists(/databases/$(database)/documents/polls/$(id)/votes/$(request.auth.uid))
+        && existsAfter(/databases/$(database)/documents/polls/$(id)/votes/$(request.auth.uid))
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['c' + string(getAfter(/databases/$(database)/documents/polls/$(id)/votes/$(request.auth.uid)).data.opt)])
+        && request.resource.data['c' + string(getAfter(/databases/$(database)/documents/polls/$(id)/votes/$(request.auth.uid)).data.opt)]
+             == resource.data['c' + string(getAfter(/databases/$(database)/documents/polls/$(id)/votes/$(request.auth.uid)).data.opt)] + 1;
+      allow delete: if isAdmin();
+
+      match /votes/{uid} {
+        allow read: if true;
+        allow create: if canWrite() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['opt', 'createdAt'])
+          && request.resource.data.opt is int
+          && request.resource.data.opt >= 0
+          && request.resource.data.opt < get(/databases/$(database)/documents/polls/$(id)).data.opts.size()
+          && request.resource.data.createdAt == request.time
+          && getAfter(/databases/$(database)/documents/polls/$(id)).data['c' + string(request.resource.data.opt)]
+             == get(/databases/$(database)/documents/polls/$(id)).data['c' + string(request.resource.data.opt)] + 1;
+        allow update, delete: if false;
+      }
+    }
+
+    // Moderation
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;   // created manually in the Firebase console
+    }
+    match /banned/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}

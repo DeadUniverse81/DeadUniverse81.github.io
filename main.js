@@ -324,7 +324,7 @@ const TEASER = { src: '' };
   if (fine && !rm) { let ty = scrollY, cyv = scrollY, run = false;
     const max = () => document.documentElement.scrollHeight - innerHeight;
     addEventListener('wheel', e => { if (e.ctrlKey || e.defaultPrevented || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-      if (e.target.closest?.('input[type=range]')) return;
+      if (e.target.closest?.('input[type=range],.cm-scroll,.cm-modal,textarea')) return;
       e.preventDefault(); if (!run) { ty = cyv = scrollY; }
       ty = Math.max(0, Math.min(max(), ty + e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? innerHeight : 1)));
       if (!run) { run = true; document.documentElement.style.scrollBehavior = 'auto';
