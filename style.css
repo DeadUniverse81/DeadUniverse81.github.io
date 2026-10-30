@@ -273,3 +273,4 @@ html{overflow-x:clip}
 .md-txt i:last-child{margin:0 .4em 0 .4em}
 @media (max-width:600px){#latest{margin-bottom:4rem}.more-div{gap:.8rem;margin-bottom:2.5rem}.md-txt{font-size:.65rem;letter-spacing:.35em}}
 @media (min-width:760px){.track.latest h3{font-size:1.2rem;letter-spacing:.24em}}
+@media (min-width:760px){.track.latest{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}.track.latest h3{font-size:1.15rem;letter-spacing:.2em;padding-right:2.2rem}}
