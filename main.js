@@ -108,7 +108,7 @@ TRACKS.forEach(t => {
 // ---- Dust particles ----
 const c = document.getElementById('dust'), x = c.getContext('2d'); let P = [], W, H;
 function size() { const d = Math.min(devicePixelRatio || 1, 3840 / Math.max(1, c.offsetWidth)); W = c.width = c.offsetWidth * d; H = c.height = c.offsetHeight * d;
-  P = Array.from({ length: Math.round(W * H / 25000) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.4 + .3, v: Math.random() * .25 + .05, a: Math.random() * .5 + .1, p: Math.random() * 6 })); }
+  P = Array.from({ length: Math.round(W * H / (matchMedia('(pointer:coarse)').matches ? 18500 : 14000)) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.4 + .3, v: Math.random() * .25 + .05, a: Math.random() * .5 + .1, p: Math.random() * 6 })); }
 addEventListener('resize', size); size();
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FC = ['#e8e2d4', '#e6c46a', '#6fa8ff', '#e26a8a', '#7fe0c0', '#c9cdd6', '#b48cff'];
@@ -320,7 +320,7 @@ const TEASER = { src: '' };
     addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; mx = e.clientX; my = e.clientY; cu.classList.add('on');
       cu.classList.toggle('big', !!e.target.closest?.('a,button,input,.track')); }, { passive: true });
     document.addEventListener('mouseleave', () => cu.classList.remove('on'));
-    (function f() { cx += (mx - cx) * .18; cy += (my - cy) * .18; cu.style.transform = `translate3d(${cx}px,${cy}px,0)`; requestAnimationFrame(f); })(); }
+    (function f() { cx += (mx - cx) * .18; cy += (my - cy) * .18; cu.style.transform = `translate3d(${cx}px,${cy}px,0)` + (cu.classList.contains('big') ? ' scale(1.22) rotate(-6deg)' : ''); requestAnimationFrame(f); })(); }
   // momentum wheel scrolling (desktop mouse wheel only; touch stays native)
   if (fine && !rm) { let ty = scrollY, cyv = scrollY, run = false;
     const max = () => document.documentElement.scrollHeight - innerHeight;

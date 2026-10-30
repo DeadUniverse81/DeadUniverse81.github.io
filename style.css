@@ -246,3 +246,6 @@ body.track-playing #exclusive{background:transparent!important}
 .reveal.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}#grain,.chrome,.track::before{animation:none}}
 html{overflow-x:clip}
+/* v45 bow cursor */
+@media (hover:hover) and (pointer:fine){#cur{width:64px;height:64px;margin:0;border:0;border-radius:0;box-shadow:none;transform-origin:0 0;filter:drop-shadow(0 0 4px rgba(217,164,65,.65)) drop-shadow(0 1px 1px rgba(0,0,0,.8));transition:opacity .3s,filter .25s}
+#cur::before,#cur::after{display:none}#cur.big{width:64px;height:64px;margin:0;filter:drop-shadow(0 0 8px rgba(255,220,140,.9)) drop-shadow(0 1px 1px rgba(0,0,0,.8))}#cur svg{display:block}}
