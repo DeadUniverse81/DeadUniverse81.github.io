@@ -111,9 +111,22 @@ function size() { const d = Math.min(devicePixelRatio || 1, 3840 / Math.max(1, c
   P = Array.from({ length: Math.round(W * H / 25000) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.4 + .3, v: Math.random() * .25 + .05, a: Math.random() * .5 + .1, p: Math.random() * 6 })); }
 addEventListener('resize', size); size();
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FC = ['#e8e2d4', '#e6c46a', '#6fa8ff', '#e26a8a', '#7fe0c0', '#c9cdd6', '#b48cff'];
+let PX = -1e4, PY = -1e4, PT = 0;
+const ptr = (cx, cy) => { const r = c.getBoundingClientRect(), k = W / Math.max(1, r.width); PX = (cx - r.left) * k; PY = (cy - r.top) * k; PT = performance.now(); };
+addEventListener('pointermove', e => ptr(e.clientX, e.clientY), { passive: true });
+addEventListener('touchmove', e => { const t = e.touches[0]; if (t) ptr(t.clientX, t.clientY); }, { passive: true });
+addEventListener('touchstart', e => { const t = e.touches[0]; if (t) ptr(t.clientX, t.clientY); }, { passive: true });
+addEventListener('touchend', () => { PT = 0; }, { passive: true });
 (function f(t) { x.clearRect(0, 0, W, H);
-  for (const q of P) { if (!still) { q.y += q.v; q.x += Math.sin(t / 4000 + q.p) * .15; if (q.y > H) q.y = 0; }
-    x.globalAlpha = q.a * (0.6 + 0.4 * Math.sin(t / 2000 + q.p)); x.fillStyle = '#e8e2d4'; x.beginPath(); x.arc(q.x, q.y, q.r, 0, 7); x.fill(); }
+  const act = !still && performance.now() - PT < 2500 && PY > -50 && PY < H + 50, k = W / Math.max(1, c.offsetWidth), RA = 190 * k, R2 = RA * RA, HIT = 9 * k;
+  for (const q of P) { q.vx = q.vx || 0; q.vy = q.vy || 0; q.c = q.c || 0;
+    if (!still) { if (act) { const dx = PX - q.x, dy = PY - q.y, d2 = dx * dx + dy * dy;
+        if (d2 < R2) { const d = Math.sqrt(d2) || 1, s = (1 - d / RA) * .09 * k; q.vx += dx / d * s; q.vy += dy / d * s;
+          if (d < HIT && t - (q.ht || 0) > 700) { q.ht = t; q.c = q.c % (FC.length - 1) + 1; q.vx -= dx / d * 2.2 * k; q.vy -= dy / d * 2.2 * k; } } }
+      q.vx *= .94; q.vy *= .94; q.y += q.v + q.vy; q.x += Math.sin(t / 4000 + q.p) * .15 + q.vx;
+      if (q.y > H) q.y = 0; if (q.y < 0) q.y = H; if (q.x < 0) q.x += W; if (q.x > W) q.x -= W; }
+    x.globalAlpha = (q.c ? Math.min(1, q.a + .35) : q.a) * (0.6 + 0.4 * Math.sin(t / 2000 + q.p)); x.fillStyle = FC[q.c]; x.beginPath(); x.arc(q.x, q.y, q.c ? q.r * 1.25 : q.r, 0, 7); x.fill(); }
   requestAnimationFrame(f); })(0);
 // preview helper: ?scroll=music jumps instantly to a section
 const sp = new URLSearchParams(location.search).get('scroll');
@@ -200,7 +213,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
     fl *= .88; nf.style.opacity = fl.toFixed(3);
     const f0 = 70, f1 = 16500, bw = W / N, cy = H * .62;
     const grd = g.createLinearGradient(0, cy - H * .55, 0, cy);
-    grd.addColorStop(0, 'rgba(232,226,212,.7)'); grd.addColorStop(.45, 'rgba(217,164,65,.45)'); grd.addColorStop(1, 'rgba(217,164,65,.08)');
+    grd.addColorStop(0, '#fff'); grd.addColorStop(.5, '#d8d0c0'); grd.addColorStop(1, '#6a5a40');
     g.shadowColor = 'rgba(217,164,65,.6)'; g.shadowBlur = 18 * (W / 1920);
     let gmax = 0;
     for (let i = 0; i < N; i++) {
@@ -217,7 +230,12 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
       hBar[i] = v > hBar[i] ? v : hBar[i] * .92 + v * .08;
       if (hBar[i] >= peak[i]) { peak[i] = hBar[i]; pv[i] = 0; } else { pv[i] += .0009; peak[i] = Math.max(0, peak[i] - pv[i]); }
       const h = Math.min(1, hBar[i]) * H * .55, x = i * bw + bw * .18, w = bw * .64;
-      g.fillStyle = grd; g.fillRect(x, cy - h, w, h);
+      if (h > 0.5) { const mg = g.createLinearGradient(x, 0, x + w, 0);
+        mg.addColorStop(0, '#5a3d0e'); mg.addColorStop(.18, '#b8862b'); mg.addColorStop(.36, '#f7e3a1'); mg.addColorStop(.44, '#fffaf0'); mg.addColorStop(.52, '#e8c063'); mg.addColorStop(.78, '#a0711f'); mg.addColorStop(1, '#4a320b');
+        g.globalAlpha = .88; g.fillStyle = mg; g.fillRect(x, cy - h, w, h); g.globalAlpha = 1; g.shadowBlur = 0;
+        g.fillStyle = grd; g.globalCompositeOperation = 'multiply'; g.fillRect(x, cy - h, w, h); g.globalCompositeOperation = 'source-over';
+        g.fillStyle = 'rgba(255,248,225,.75)'; g.fillRect(x, cy - h, w, Math.min(h, 2.5 * (W / 1920)));
+        g.shadowBlur = 18 * (W / 1920); }
       g.fillStyle = 'rgba(217,164,65,.18)'; g.fillRect(x, cy + 2, w, h * .35); // reflection
       g.fillStyle = 'rgba(255,236,190,.9)'; g.fillRect(x, cy - Math.min(1, peak[i]) * H * .55 - 3 * (W / 1920), w, 2 * (W / 1920));
     }
@@ -278,4 +296,39 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
   document.addEventListener('du:bighit', () => { if (rm || !curEl || !B.classList.contains('track-playing')) return;
     const h = curEl.querySelector('h3'); if (!h) return; h.dataset.t = h.textContent;
     h.classList.remove('glitch'); void h.offsetWidth; h.classList.add('glitch'); setTimeout(() => h.classList.remove('glitch'), 130); });
+})();
+// ===== v44 luxury =====
+// Teaser config: set src (e.g. 'assets/tracks/teaser.mp3') to enable the play button on the Coming soon card.
+const TEASER = { src: '' };
+(() => {
+  const rm = matchMedia('(prefers-reduced-motion: reduce)').matches, fine = matchMedia('(hover:hover) and (pointer:fine)').matches;
+  // teaser
+  const tb = document.querySelector('.lk-play');
+  if (tb && TEASER.src) { const a = new Audio(TEASER.src); a.preload = 'none'; tb.hidden = false;
+    tb.onclick = () => { if (a.paused) { a.play(); tb.textContent = '❚❚ Teaser'; } else { a.pause(); tb.textContent = '▶ Teaser'; } };
+    a.onended = () => tb.textContent = '▶ Teaser'; }
+  // portrait chrome overlay aspect
+  const wp = document.querySelector('.wmp'), cp = document.querySelector('.chrome-p');
+  const ar = () => { if (wp.naturalWidth) cp.style.setProperty('--wr', wp.naturalWidth + '/' + wp.naturalHeight); };
+  wp.complete ? ar() : wp.addEventListener('load', ar);
+  // reveal on scroll
+  const io = 'IntersectionObserver' in window && !rm ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' }) : null;
+  document.querySelectorAll('.track,#music h2,#exclusive h2,.lockcard').forEach((el, i) => { if (!io) return; el.classList.add('reveal'); el.style.transitionDelay = (el.classList.contains('track') ? (i % 3) * .12 : 0) + 's'; io.observe(el); });
+  // custom cursor
+  const cu = document.getElementById('cur');
+  if (fine && cu) { document.documentElement.classList.add('cur'); let mx = -99, my = -99, cx = -99, cy = -99;
+    addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; mx = e.clientX; my = e.clientY; cu.classList.add('on');
+      cu.classList.toggle('big', !!e.target.closest?.('a,button,input,.track')); }, { passive: true });
+    document.addEventListener('mouseleave', () => cu.classList.remove('on'));
+    (function f() { cx += (mx - cx) * .18; cy += (my - cy) * .18; cu.style.transform = `translate3d(${cx}px,${cy}px,0)`; requestAnimationFrame(f); })(); }
+  // momentum wheel scrolling (desktop mouse wheel only; touch stays native)
+  if (fine && !rm) { let ty = scrollY, cyv = scrollY, run = false;
+    const max = () => document.documentElement.scrollHeight - innerHeight;
+    addEventListener('wheel', e => { if (e.ctrlKey || e.defaultPrevented || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      if (e.target.closest?.('input[type=range]')) return;
+      e.preventDefault(); if (!run) { ty = cyv = scrollY; }
+      ty = Math.max(0, Math.min(max(), ty + e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? innerHeight : 1)));
+      if (!run) { run = true; document.documentElement.style.scrollBehavior = 'auto';
+        (function f() { cyv += (ty - cyv) * .1; if (Math.abs(ty - cyv) < .5) { cyv = ty; run = false; }
+          scrollTo(0, cyv); if (run) requestAnimationFrame(f); else document.documentElement.style.scrollBehavior = ''; })(); } }, { passive: false }); }
 })();

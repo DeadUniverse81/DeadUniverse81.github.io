@@ -1,18 +1,20 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" type="image/png" href="favicon.png"><title>DeadUniverse</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=43"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Michroma&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=44"></head><body>
 <div id="vizbg" aria-hidden="true"><div class="nf"></div></div><canvas id="viz" aria-hidden="true"></canvas>
 <button id="mute" aria-label="Toggle sound" title="Sound">SOUND OFF</button>
 <header id="hero"><div class="stage" aria-hidden="true">
 <picture><source media="(max-aspect-ratio:4/3)" srcset="assets/hero_bg_notext_4k.jpg"><img class="hbg" src="assets/hero_bg_4k.jpg" alt=""></picture>
 <picture class="neb"><source media="(max-aspect-ratio:4/3)" srcset="assets/neb_notext_4k.jpg"><img src="assets/neb_4k.jpg" alt="" loading="lazy"></picture><div class="flash"></div><div class="sglow"></div><div class="sflick"></div>
-<img class="wmt" src="assets/wmt_4k.png" alt=""><div class="astro"><img src="assets/astro_4k.png" alt=""><div class="alit"></div></div>
-</div><img class="wmp" src="assets/wordmark_4k.png" alt="DeadUniverse"><button id="enter">ENTER</button></header>
+<img class="wmt" src="assets/wmt_4k.png" alt=""><div class="chrome chrome-d"></div><div class="astro"><img src="assets/astro_4k.png" alt=""><div class="alit"></div></div>
+</div><img class="wmp" src="assets/wordmark_4k.png" alt="DeadUniverse"><div class="chrome chrome-p" aria-hidden="true"></div><button id="enter">ENTER</button></header>
 <section id="descent"><canvas id="dust"></canvas>
 <p class="manifesto"><img class="mlogo" src="assets/wordmark_red_4k.png" alt="" aria-hidden="true">The universe is cold, silent and dead.<br><span>Music is the only miracle.</span></p></section>
 <section id="music"><h2>Music</h2><div id="tracks"></div></section>
+<section id="exclusive"><h2>Exclusive</h2><article class="lockcard reveal"><div class="lk-art"><svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.3" r="1.2"/></svg></div><div class="lk-meta"><p class="lk-tag">Unreleased</p><h3>Coming soon</h3><p class="lk-sub">A new transmission from the void.</p><button class="lk-play" type="button" hidden>&#9654; Teaser</button></div></article></section>
 <footer><div class="spark"></div><nav><a href="#">YouTube</a><a href="#">Spotify</a><a href="#">Instagram</a><a href="#">X</a></nav><p id="visits" hidden>TODAY <b id="vToday">–</b> · ALL TIME <b id="vAll">–</b></p><p>&copy; DeadUniverse</p></footer>
-<audio id="ambient" loop preload="auto"><source src="assets/ambient.mp3?v=43" type="audio/mpeg"><source src="assets/ambient.ogg?v=43" type="audio/ogg; codecs=opus"></audio>
-<script src="main.js?v=43"></script></body></html>
+<audio id="ambient" loop preload="auto"><source src="assets/ambient.mp3?v=44" type="audio/mpeg"><source src="assets/ambient.ogg?v=44" type="audio/ogg; codecs=opus"></audio>
+<div id="grain" aria-hidden="true"></div><div id="cur" aria-hidden="true"></div>
+<script src="main.js?v=44"></script></body></html>
