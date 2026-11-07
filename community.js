@@ -59,12 +59,24 @@ function refreshUI() {
   document.body.classList.toggle('cm-admin', admin);
   renderIdeas(); renderPolls();
 }
+function publishIdentity(resolved) {
+  // admin is only the admins/{uid} document. The visit opt-out flag is not read here and grants nothing.
+  const detail = window.DUStats
+    ? DUStats.identityDetail({ resolved, isAdmin: admin, signedIn: !!me })
+    : { resolved: !!resolved, admin: !!(resolved && admin), signedIn: !!me };
+  window.DU = window.DU || {};
+  if (window.DUStats) DUStats.deliverIdentity(window, detail);
+  else { DU.identity = detail; if (detail.resolved && typeof DU._resolveIdentity === 'function') { const resolve = DU._resolveIdentity; DU._resolveIdentity = null; resolve(detail); } }
+  document.dispatchEvent(new CustomEvent('du:identity', { detail }));
+}
 onAuthStateChanged(auth, async u => { me = u; admin = banned = false; myName = '';
+  let adminKnown = true;
   if (u) { try { const p = await getDoc(doc(db, 'users', u.uid)); myName = p.exists() ? p.data().name : ''; } catch {}
-    try { admin = (await getDoc(doc(db, 'admins', u.uid))).exists(); } catch {}
+    try { admin = (await getDoc(doc(db, 'admins', u.uid))).exists(); } catch { adminKnown = false; }
     try { banned = (await getDoc(doc(db, 'banned', u.uid))).exists(); } catch {}
     voted = {}; }
-  refreshUI(); loadVotes(); });
+  refreshUI(); loadVotes();
+  publishIdentity(!u || adminKnown); });
 
 // ---- LIVE WALL ----
 const list = $('#chat-list'); let lastSend = 0;

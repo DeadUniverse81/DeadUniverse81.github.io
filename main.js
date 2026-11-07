@@ -52,22 +52,60 @@ const SNAMES = {"spotify": "Spotify", "apple": "Apple Music", "deezer": "Deezer"
 const ICONS = {"youtube": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.4-1.6.5-4.8.5-4.8s0-3.2-.5-4.8zM9.7 15.1V8.9l5.8 3.1z\"/></svg>", "soundcloud": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M1 14.5h.9v3.3H1zm1.8-1.3h.9v4.6h-.9zm1.8-.8h.9v5.4h-.9zm1.8-.4h.9v5.8h-.9zm1.8-1.4h.9v7.2h-.9zm1.8-1.5h.9v8.7h-.9zm1.8-1.3c.5-.2 1.1-.3 1.6-.3a5.1 5.1 0 0 1 5.1 4.6 2.9 2.9 0 0 1 .9-.1 3 3 0 0 1 0 6h-7.6z\"/></svg>"};
 const LABELS = { spotify: 'Spotify', youtube: 'YouTube', bandcamp: 'Bandcamp', apple: 'Apple Music', soundcloud: 'SoundCloud' };
 let current = null;
-// v31: per-track like (abacus counter), one per browser per track, silent if the API is down
+// Likes: Abacus integers, one recorded hit per browser per track per counter epoch.
+// Page load only reads. A click hits only after auth resolves and only for a
+// visitor who is neither the signed-in admin nor an excluded browser.
+function duStorage() {
+  try { if (window.localStorage) return window.localStorage; } catch (e) {}
+  return { getItem() { return null; }, setItem() {}, removeItem() {} };
+}
+function countState() {
+  const ident = (window.DU && DU.identity) || { resolved: false, admin: false };
+  return { browserExcluded: DUStats.isBrowserExcluded(duStorage()), authResolved: !!ident.resolved, isAdmin: !!ident.admin };
+}
+async function duRead(op, key) {
+  const res = await fetch(DUStats.counterUrl(op, key), { cache: 'no-store' });
+  let body = null; try { body = await res.json(); } catch (e) { body = null; }
+  return DUStats.interpretResponse(res.status, body);
+}
+function duGet(key) { return duRead('get', key); }
+async function duMutate(op, key) {
+  const use = DUStats.selectOp(op, countState());
+  const parsed = await duRead(use, key);
+  return Object.assign(parsed, { op: use });
+}
 function addLike(el, title) {
-  const API = 'https://abacus.jasoncameron.dev', NS = 'deaduniversemusic';
-  const key = 'like-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''), ls = 'du_' + key;
-  let liked = false; try { liked = localStorage.getItem(ls) === '1'; } catch (e) {}
+  const key = DUStats.likeKey(title);
+  const liked = DUStats.readLiked(duStorage(), title);
   const b = document.createElement('button'); b.className = 'like' + (liked ? ' on' : ''); b.type = 'button';
-  b.setAttribute('aria-label', 'Like ' + title); b.setAttribute('aria-pressed', liked);
+  b.setAttribute('aria-label', 'Like ' + title); b.setAttribute('aria-pressed', liked ? 'true' : 'false');
   b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.3 5.4 3.2 1.5-1.9 3.3-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z"/></svg><span class="lc"></span>';
   const lc = b.querySelector('.lc');
-  const val = r => r.status === 404 ? { value: 0 } : r.ok ? r.json() : Promise.reject();
   const show = n => { if (typeof n === 'number') { lc.textContent = n.toLocaleString('en-US'); b.classList.add('ok'); } };
-  fetch(`${API}/get/${NS}/${key}`, { cache: 'no-store' }).then(val).then(j => show(j.value)).catch(() => {});
-  b.onclick = () => {
-    if (b.classList.contains('on')) return; b.classList.add('on', 'pop'); b.setAttribute('aria-pressed', true);
-    try { localStorage.setItem(ls, '1'); } catch (e) {}
-    fetch(`${API}/hit/${NS}/${key}`, { cache: 'no-store' }).then(val).then(j => show(j.value)).catch(() => {});
+  duGet(key).then(parsed => { if (parsed.ok) show(parsed.value); }).catch(() => {});
+  b.onclick = async () => {
+    if (b.classList.contains('on') || b.dataset.busy === '1') return;
+    if (DUStats.isBrowserExcluded(duStorage())) return;
+    b.dataset.busy = '1';
+    let ident = { resolved: false, admin: false };
+    try { ident = await (window.DU && DU.identityReady); } catch (e) {}
+    if (!ident) ident = { resolved: false, admin: false };
+    const decision = DUStats.planLikeClick({
+      browserExcluded: DUStats.isBrowserExcluded(duStorage()),
+      authResolved: !!ident.resolved, isAdmin: !!ident.admin,
+      alreadyLiked: DUStats.readLiked(duStorage(), title)
+    });
+    if (decision.op !== 'hit' || DUStats.selectOp('hit', countState()) !== 'hit') { b.dataset.busy = ''; return; }
+    b.classList.add('on', 'pop'); b.setAttribute('aria-pressed', 'true');
+    try {
+      const parsed = await duMutate('hit', key);
+      if (parsed.op !== 'hit' || !parsed.ok) throw new Error('like');
+      if (decision.persist) DUStats.writeLiked(duStorage(), title);
+      show(parsed.value);
+    } catch (e) {
+      b.classList.remove('on'); b.setAttribute('aria-pressed', 'false');
+    }
+    b.dataset.busy = '';
     setTimeout(() => b.classList.remove('pop'), 500);
   };
   const h = el.querySelector('.meta h3'), row = document.createElement('div'); row.className = 'tt-row';
@@ -245,21 +283,59 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
   requestAnimationFrame(frame);
 })();
 
-// v31: visitor counter (abacus.jasoncameron.dev), one hit per browser per Budapest day, silent on failure
+// Visitor totals: read first, hit only after Firebase auth resolves, and never
+// for an excluded browser or a signed-in admin. Legacy du_seen is ignored.
 (() => {
-  const box = document.getElementById('visits'); if (!box || !window.fetch) return;
-  const API = 'https://abacus.jasoncameron.dev', NS = 'deaduniversemusic';
-  let day; try { day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Budapest' }).format(new Date()).replace(/-/g, ''); } catch (e) { day = new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
-  let seen = null; try { seen = localStorage.getItem('du_seen'); } catch (e) {}
-  const fresh = seen !== day;
-  const get = k => fetch(`${API}/${fresh ? 'hit' : 'get'}/${NS}/${k}`, { cache: 'no-store' })
-    .then(r => r.status === 404 ? { value: 0 } : r.ok ? r.json() : Promise.reject()).then(j => typeof j.value === 'number' ? j.value : Promise.reject());
-  Promise.all([get('d' + day), get('alltime')]).then(([d, a]) => {
-    if (fresh) try { localStorage.setItem('du_seen', day); } catch (e) {}
+  const box = document.getElementById('visits'); if (!box || !window.fetch || !window.DUStats) return;
+  const owner = DUStats.applyOwnerQuery(location.search, duStorage(), m => confirm(m), m => alert(m));
+  if (owner.strip) { const u = new URL(location.href); u.searchParams.delete('du_owner'); history.replaceState(null, '', u.pathname + u.search + u.hash); }
+  const setMode = mode => { box.dataset.countMode = mode; box.dataset.epoch = DUStats.EPOCH; };
+  const paint = (dayVal, allVal) => {
     const f = n => n.toLocaleString('en-US');
-    document.getElementById('vToday').textContent = f(Math.max(d, 1)); document.getElementById('vAll').textContent = f(Math.max(a, d, 1));
-    box.hidden = false;
-  }).catch(() => { box.hidden = true; });
+    document.getElementById('vToday').textContent = f(dayVal); document.getElementById('vAll').textContent = f(allVal); box.hidden = false;
+  };
+  const note = on => {
+    let n = document.getElementById('count-note');
+    if (!on) { if (n) n.hidden = true; return; }
+    if (!n) { n = document.createElement('p'); n.id = 'count-note'; n.textContent = 'This browser is not counted'; box.insertAdjacentElement('afterend', n); }
+    n.hidden = false;
+  };
+  const readPair = async day => {
+    const d = await duGet(DUStats.dayKey(day)), a = await duGet(DUStats.alltimeKey());
+    if (!d.ok || !a.ok) throw new Error('visit-read');
+    paint(d.value, a.value);
+  };
+  (async () => {
+    const day = DUStats.budapestDay();
+    setMode('reading');
+    try { await readPair(day); } catch (e) { box.hidden = true; return; }
+    // Dismissing the exclusion prompt does not exclude the browser, and this
+    // load still does not count, so a mis-tap cannot be subtracted later.
+    if (owner.action === 'cancel') { setMode('not-counted'); note(false); return; }
+    if (DUStats.isBrowserExcluded(duStorage())) { setMode('excluded'); note(true); return; }
+    note(false); setMode('waiting-auth');
+    let ident = { resolved: false, admin: false };
+    try { ident = await DU.identityReady; } catch (e) {}
+    if (!ident || !ident.resolved || ident.admin || DUStats.isBrowserExcluded(duStorage())) {
+      setMode(ident && ident.admin ? 'admin' : (DUStats.isBrowserExcluded(duStorage()) ? 'excluded' : 'not-counted'));
+      if (ident && ident.admin) note(false);
+      return;
+    }
+    const storage = duStorage();
+    const ops = DUStats.planVisitOps({ browserExcluded: false, authResolved: true, isAdmin: false, day, hitNames: DUStats.readHitNames(storage, day) });
+    let recorded = false;
+    for (const op of ops) {
+      if (op.op !== 'hit') continue;
+      if (!DUStats.claimHit(storage, day, op.name)) continue;
+      try {
+        const parsed = await duMutate('hit', op.key);
+        if (parsed.op !== 'hit' || !parsed.ok) throw new Error('visit-hit');
+        recorded = true;
+      } catch (e) { DUStats.unclaimHit(storage, day, op.name); }
+    }
+    try { await readPair(day); } catch (e) {}
+    setMode(recorded ? 'recorded' : 'seen');
+  })();
 })();
 
 // ---- v41 FX: fog dive, floating cover, living spark, glitch title ----
