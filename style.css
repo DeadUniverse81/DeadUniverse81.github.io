@@ -147,6 +147,8 @@ body.entered .stage>.wmt{opacity:1}
 #visits[hidden]{display:none}
 #visits b{font-weight:400;color:var(--gold);margin:0 .35em}
 @media (max-width:420px){#visits{font-size:.5rem!important;letter-spacing:.14em}}
+#count-note{font-family:'Michroma',sans-serif;font-size:.5rem;letter-spacing:.14em;color:var(--bone);opacity:.45;margin:.55rem 0 0}
+#count-note[hidden]{display:none}
 
 /* v31: like heart */
 .track .meta{position:relative}
