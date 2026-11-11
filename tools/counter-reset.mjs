@@ -17,6 +17,9 @@
 //       Not required for the displayed totals to start at zero.
 //
 // Reads refresh Abacus's 6-month TTL. They do not change counter values.
+// On-site play keys (play-<slug>-e1) are read with GET /info only. They are
+// not part of the visit/like allowlist, so --apply and --create-epoch never
+// touch them. Do not call /hit for those keys from this script.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -165,6 +168,12 @@ function printReport(doc) {
   if (all && daySum !== all.value) console.log(`gap: alltime is ${all.value - daySum} away from the sum of scanned daily keys. Individual hits are not stored, so this is not corrected by subtraction.`);
   const epochExisting = epoch.filter(r => r.exists);
   console.log(`Epoch ${S.EPOCH} keys present: ${epochExisting.length} (absent keys read as 0 in the site and are not created by this dry run).`);
+  if (doc.playback) {
+    console.log('On-site plays (read-only /info, not hit, not reset, not created here):');
+    for (const r of doc.playback) {
+      console.log(`  ${r.key} = ${r.exists ? r.value : 'absent (site shows 0)'}  info-only`);
+    }
+  }
   console.log('Stale browsers: du_like-* and du_seen belong to the legacy keys. The site ignores them and never decrements, so a fresh total cannot go negative.');
   console.log('NOT APPLIED. Production counter values were not changed by this command.');
 }
@@ -218,7 +227,13 @@ export async function main(argv, env, io) {
 
   const records = await collect(keys, fetchImpl, sleep);
   const plan = planApply(records, { apply, allowed });
-  const doc = backupDoc(records, { mode: plan.mode, titles, scanFrom: SCAN_FROM, scanTo: days[days.length - 1] });
+  const playbackKeys = S.playbackReadKeys(titles).filter(key => S.isPlaybackKey(key) && !allowed.has(key));
+  const playback = await collect(playbackKeys, fetchImpl, sleep);
+  const doc = backupDoc(records, {
+    mode: plan.mode, titles, scanFrom: SCAN_FROM, scanTo: days[days.length - 1],
+    playbackNote: 'GET /info only. These keys are not incremented or reset by this script. A missing key is 0 on the site and is not backfilled.',
+    playback
+  });
   fs.mkdirSync(path.dirname(backupPath), { recursive: true });
   fs.writeFileSync(backupPath, JSON.stringify(doc, null, 2) + '\n');
   printReport(doc);
