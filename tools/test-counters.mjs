@@ -123,10 +123,16 @@ test('the page wires reads and hits through the policy and does not treat opt-ou
   assert.equal(communityJs.includes('du_count_exclude'), false);
   assert.match(communityJs, /publishIdentity\(!u \|\| adminKnown\)/);
   assert.match(communityJs, /identityDetail\(\{ resolved, isAdmin: admin/);
-  assert.match(indexHtml, /stats-policy\.js\?v=53/);
-  assert.match(indexHtml, /main\.js\?v=53/);
+  assert.match(indexHtml, /stats-policy\.js\?v=54/);
+  assert.match(indexHtml, /main\.js\?v=54/);
   assert.match(indexHtml, /community\.js\?v=53/);
-  assert.match(indexHtml, /style\.css\?v=53/);
+  assert.match(indexHtml, /style\.css\?v=54/);
+  assert.match(mainJs, /bindOnsitePreview\(a, t\.title\)/);
+  assert.match(mainJs, /kind: 'onsite'/);
+  assert.equal(mainJs.includes('/hit/'), false);
+  assert.equal(mainJs.includes('playKey(t.stream'), false);
+  assert.equal(mainJs.includes("kind: 'youtube'"), false);
+  assert.equal(mainJs.includes("kind: 'spotify'"), false);
   assert.equal(fs.readFileSync(path.join(root, 'CNAME'), 'utf8').trim(), 'deaduniversemusic.com');
   const titles = titlesFromMain(mainJs);
   assert.deepEqual(titles, [
@@ -197,6 +203,15 @@ test('dry run and refused apply do not call hit, reset, delete, or create', asyn
   assert.ok(doc.records.some(r => r.key === 'd20261020'));
   assert.equal(epoch.exists, false);
   assert.equal(JSON.stringify(doc).includes('admin_key'), false);
+  const playInfo = doc.playback.find(r => r.key === 'play-lift-me-up-e1');
+  assert.equal(playInfo.exists, false);
+  assert.ok(doc.playback.every(r => S.isPlaybackKey(r.key)));
+  assert.equal(doc.records.some(r => String(r.key).startsWith('play-')), false);
+  assert.ok(calls.some(c => c.url.includes('/info/deaduniversemusic/play-rewritten-by-light-e1')));
+  assert.ok(calls.filter(c => c.url.includes('/play-')).every(c => c.url.includes('/info/') && !c.url.includes('/hit/')));
+  const resetAllowed = allowlist({ titles: titlesFromMain(mainJs), days: ['20261107'] });
+  assert.equal([...resetAllowed].some(k => String(k).startsWith('play-')), false);
+  assert.throws(() => planApply([{ key: 'play-lift-me-up-e1', exists: true, value: 3, adminResetPossible: true }], { apply: true, allowed: resetAllowed }));
   assert.ok(calls.every(c => c.method === 'GET' && c.url.includes('/info/') && !c.auth));
   calls.length = 0;
   process.exitCode = 0;
@@ -206,4 +221,158 @@ test('dry run and refused apply do not call hit, reset, delete, or create', asyn
   assert.ok(calls.every(c => !c.auth));
   process.exitCode = prev;
   fs.unlinkSync(backup);
+});
+
+function drivePlay(pass, seconds, sourceId, patch) {
+  let p = pass || S.createPlayPass();
+  let t = p.lastTime == null ? 0 : p.lastTime / 1000;
+  const base = (mediaTime, extra) => Object.assign({
+    kind: 'onsite', sourceId: sourceId || 'card-a', mediaTime, paused: false, seeking: false,
+    ended: false, waiting: false, playbackRate: 1
+  }, extra || {}, patch || {});
+  if (p.lastTime == null) p = S.notePlaySample(p, base(t)).pass;
+  const steps = Math.round(seconds / 0.25);
+  let added = 0;
+  for (let i = 0; i < steps; i++) {
+    t += 0.25;
+    const sample = S.notePlaySample(p, base(t));
+    p = sample.pass;
+    added += sample.added;
+  }
+  return { pass: p, added };
+}
+
+test('a qualified on-site play needs 30s of real playback and ignores pauses, seeks, and external audio', () => {
+  const frozen = Object.freeze(S.createPlayPass());
+  const external = S.notePlaySample(frozen, { kind: 'youtube', mediaTime: 40, paused: false, sourceId: 'yt' });
+  assert.equal(external.reason, 'not-onsite');
+  assert.equal(external.added, 0);
+  assert.equal(S.notePlaySample(frozen, { kind: 'spotify', mediaTime: 40, paused: false }).reason, 'not-onsite');
+  assert.equal(S.notePlaySample(frozen, { kind: 'ambient', mediaTime: 40, paused: false }).reason, 'not-onsite');
+  assert.equal(frozen.listened, 0);
+
+  let pass = S.createPlayPass();
+  const early = drivePlay(pass, 29.75, 'card-a');
+  pass = early.pass;
+  assert.equal(pass.listened, 29750);
+  assert.equal(S.planPlayHit(guest, pass).op, 'none');
+  assert.equal(S.planPlayHit(guest, pass).reason, 'short');
+  const qualified = drivePlay(pass, 0.25, 'card-a');
+  pass = qualified.pass;
+  assert.equal(pass.listened, 30000);
+  assert.deepEqual(S.planPlayHit({ ...guest, now: 0 }, pass), { op: 'hit', reason: 'qualify' });
+
+  const pausedFrom = pass.lastTime / 1000;
+  let paused = S.notePlaySample(pass, { kind: 'onsite', sourceId: 'card-a', mediaTime: pausedFrom, paused: true, playbackRate: 1 }).pass;
+  paused = S.notePlaySample(paused, { kind: 'onsite', sourceId: 'card-a', mediaTime: pausedFrom + 40, paused: true, playbackRate: 1 }).pass;
+  assert.equal(paused.listened, 30000);
+  assert.equal(S.planPlayHit(guest, S.markPlayCounted(paused)).reason, 'counted');
+
+  let seeking = drivePlay(S.createPlayPass(), 10, 'card-a').pass;
+  const at = seeking.lastTime / 1000;
+  seeking = S.notePlaySample(seeking, { kind: 'onsite', sourceId: 'card-a', mediaTime: at + 25, seeking: true, paused: false, playbackRate: 1 }).pass;
+  seeking = S.notePlaySample(seeking, { kind: 'onsite', sourceId: 'card-a', mediaTime: at + 25, paused: false, playbackRate: 1 }).pass;
+  assert.equal(seeking.listened, 10000);
+  const afterSeek = drivePlay(seeking, 19.75, 'card-a');
+  assert.equal(afterSeek.pass.listened, 29750);
+  assert.equal(S.planPlayHit(guest, afterSeek.pass).op, 'none');
+  const seekDone = drivePlay(afterSeek.pass, 0.25, 'card-a');
+  assert.equal(seekDone.pass.listened, 30000);
+
+  let rate = drivePlay(S.createPlayPass(), 5, 'card-a').pass;
+  const rateAt = rate.lastTime / 1000;
+  rate = S.notePlaySample(rate, { kind: 'onsite', sourceId: 'card-a', mediaTime: rateAt + 0.25, paused: false, playbackRate: 2 }).pass;
+  assert.equal(rate.listened, 5000);
+
+  const same = S.notePlaySample(seekDone.pass, {
+    kind: 'onsite', sourceId: 'card-a', mediaTime: seekDone.pass.lastTime / 1000, paused: false, playbackRate: 1
+  });
+  assert.equal(same.added, 0);
+  assert.equal(same.pass.listened, seekDone.pass.listened);
+
+  assert.equal(S.playKey('b4bYLon'), 'play-b4bylon-e1');
+  assert.equal(S.playKey('Lift Me Up'), 'play-lift-me-up-e1');
+  assert.notEqual(S.playKey('Lift Me Up'), S.likeKey('Lift Me Up'));
+  const src = S.playbackSource('Burn the World Down');
+  assert.equal(src.recommendedOp, 'info');
+  assert.equal(src.increments, false);
+  assert.equal(src.qualifySeconds, 30);
+  assert.match(src.infoUrl, /\/info\/deaduniversemusic\/play-burn-the-world-down-e1$/);
+  assert.equal(JSON.stringify(src).includes('/hit/'), false);
+  assert.equal(S.playDisplay({ ok: false, value: null }).showNumber, false);
+  assert.equal(S.playDisplay({ ok: true, value: 0, missing: true }).showNumber, true);
+  assert.equal(S.playDisplay({ ok: true, value: 0 }).value, 0);
+  assert.deepEqual(S.planPlaybackClear(['play-b4bylon-e1', 'play-the-monolith-e1']).map(x => x.key), ['play-b4bylon-e1', 'play-the-monolith-e1']);
+  assert.throws(() => S.planPlaybackClear(['play-b4bylon-e1', 'like-b4bylon-e1']));
+  assert.throws(() => S.planPlaybackClear(['alltime-e1']));
+  assert.throws(() => S.planPlaybackClear(['d20261107-e1']));
+  assert.throws(() => S.assertPlaybackKey('play-b4bylon'));
+});
+
+test('replay, track changes, duplicate cards, and owner exclusion do not double-count', () => {
+  let ashes = drivePlay(S.createPlayPass(), 30, 'latest').pass;
+  assert.equal(S.planPlayHit(guest, ashes).op, 'hit');
+  ashes = S.markPlayPending(ashes);
+  assert.equal(S.planPlayHit(guest, ashes).reason, 'pending');
+  const pendingSnapshot = ashes;
+  ashes = S.markPlayCounted(ashes);
+  assert.equal(pendingSnapshot.pending, true);
+  assert.equal(ashes.counted, true);
+  const more = drivePlay(ashes, 20, 'latest');
+  assert.equal(more.pass.counted, true);
+  assert.equal(more.pass.generation, ashes.generation);
+  assert.equal(S.planPlayHit(guest, more.pass).reason, 'counted');
+
+  const back = S.notePlaySample(more.pass, { kind: 'onsite', sourceId: 'latest', mediaTime: 0, paused: false, playbackRate: 1 });
+  assert.equal(back.reason, 'replay');
+  assert.equal(back.pass.listened, 0);
+  assert.equal(back.pass.counted, false);
+  assert.equal(back.pass.generation, more.pass.generation + 1);
+  const again = drivePlay(back.pass, 30, 'latest');
+  assert.equal(S.planPlayHit(guest, again.pass).op, 'hit');
+
+  let ended = S.markPlayCounted(again.pass);
+  ended = S.notePlaySample(ended, { kind: 'onsite', sourceId: 'latest', mediaTime: 40, ended: true, paused: true, playbackRate: 1 }).pass;
+  assert.equal(ended.closed, true);
+  const afterEnd = S.notePlaySample(ended, { kind: 'onsite', sourceId: 'latest', mediaTime: 0.25, paused: false, playbackRate: 1 });
+  assert.equal(afterEnd.pass.generation, ended.generation + 1);
+  assert.equal(afterEnd.pass.listened, 0);
+
+  let monolith = drivePlay(S.createPlayPass(), 12, 'lib').pass;
+  let other = drivePlay(S.createPlayPass(), 30, 'lib-b').pass;
+  assert.equal(monolith.listened, 12000);
+  assert.equal(other.listened, 30000);
+  monolith = drivePlay(monolith, 18, 'lib').pass;
+  assert.equal(monolith.listened, 30000);
+  assert.equal(other.listened, 30000);
+
+  let shared = drivePlay(S.createPlayPass(), 10, 'latest').pass;
+  const ignored = S.notePlaySample(shared, { kind: 'onsite', sourceId: 'library', mediaTime: 20, paused: false, playbackRate: 1 });
+  assert.equal(ignored.reason, 'other-card');
+  assert.equal(ignored.pass.listened, 10000);
+  assert.equal(shared.listened, 10000);
+  const claimed = S.notePlaySample(shared, { kind: 'onsite', sourceId: 'library', mediaTime: 10, paused: false, playbackRate: 1, claim: true });
+  assert.equal(claimed.pass.activeSourceId, 'library');
+  assert.equal(claimed.pass.listened, 10000);
+  const continued = drivePlay(claimed.pass, 20, 'library');
+  assert.equal(continued.pass.listened, 30000);
+  assert.equal(S.planPlayHit(guest, continued.pass).op, 'hit');
+
+  const bindings = {};
+  assert.equal(S.claimAudioBinding(bindings, 'audio-1'), true);
+  assert.equal(S.claimAudioBinding(bindings, 'audio-1'), false);
+  assert.equal(S.claimAudioBinding(bindings, 'audio-2'), true);
+
+  assert.equal(S.planPlayHit({ browserExcluded: true, authResolved: true, isAdmin: false }, continued.pass).reason, 'owner');
+  assert.equal(S.planPlayHit({ ...guest, isAdmin: true }, continued.pass).reason, 'owner');
+  assert.equal(S.planPlayHit({ browserExcluded: false, authResolved: false, isAdmin: false }, continued.pass).reason, 'auth');
+  const failed = S.markPlayFailed(S.markPlayPending(continued.pass), 1000);
+  assert.equal(failed.counted, false);
+  assert.equal(S.planPlayHit({ ...guest, now: 1000 + S.PLAY_RETRY_MS - 1 }, failed).reason, 'cooldown');
+  assert.equal(S.planPlayHit({ ...guest, now: 1000 + S.PLAY_RETRY_MS }, failed).op, 'hit');
+
+  let rewind = drivePlay(S.createPlayPass(), 20, 'card-a').pass;
+  rewind = S.notePlaySample(rewind, { kind: 'onsite', sourceId: 'card-a', mediaTime: 2, paused: false, playbackRate: 1 }).pass;
+  assert.equal(rewind.listened, 20000);
+  assert.equal(rewind.counted, false);
 });

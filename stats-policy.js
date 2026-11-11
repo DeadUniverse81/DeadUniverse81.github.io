@@ -1,7 +1,9 @@
-// Visit and like counting policy. Pure logic, no DOM.
-// Song likes and visits are Abacus integers (namespace deaduniversemusic).
-// They are not Firebase community data. COUNTER_EPOCH is independent of the
-// ?v= cache buster: bump it only when the displayed counters should start over.
+// Visit, like, and on-site play counting policy. Pure logic, no DOM.
+// Song likes, visits, and qualified on-site plays are Abacus integers
+// (namespace deaduniversemusic). They are not Firebase community data.
+// COUNTER_EPOCH is independent of the ?v= cache buster: bump it only when the
+// displayed visit and like counters should start over. Play keys share the
+// epoch but are new names, so adding them does not reset visits or likes.
 (function (factory) {
   var api = factory();
   if (typeof module === 'object' && module && module.exports) module.exports = api;
@@ -16,8 +18,12 @@
   var NS = 'deaduniversemusic';
   var DEFAULT_API = 'https://abacus.jasoncameron.dev';
   var EXCLUDE_KEY = 'du_count_exclude';
-  var EXCLUDE_CONFIRM = 'Exclude this browser from DeadUniverse visit and like counts? You will still see the stats. This does not grant admin access. Set this once in each browser you use (this PC and your phone are separate).';
-  var INCLUDE_CONFIRM = 'Count this browser again in DeadUniverse visit and like totals? This does not change admin access.';
+  // One qualified on-site listen. Media time, not wall-clock and not seeks.
+  var PLAY_QUALIFY_MS = 30000;
+  var PLAY_MAX_STEP_MS = 1250;
+  var PLAY_RETRY_MS = 15000;
+  var EXCLUDE_CONFIRM = 'Exclude this browser from DeadUniverse visit, like, and on-site play counts? You will still see the stats. This does not grant admin access. Set this once in each browser you use (this PC and your phone are separate).';
+  var INCLUDE_CONFIRM = 'Count this browser again in DeadUniverse visit, like, and on-site play totals? This does not change admin access.';
   var STORAGE_FAIL = 'This browser could not save that choice. Visits from this browser may still count.';
 
   function apiBase() {
@@ -31,6 +37,21 @@
 
   function likeKey(title) { return 'like-' + slug(title) + '-' + EPOCH; }
   function legacyLikeKey(title) { return 'like-' + slug(title); }
+  function playKey(title) { return 'play-' + slug(title) + '-' + EPOCH; }
+  function isPlaybackKey(key) {
+    return typeof key === 'string' && new RegExp('^play-[a-z0-9]+(?:-[a-z0-9]+)*-' + EPOCH + '$').test(key);
+  }
+  function assertPlaybackKey(key) {
+    if (!isPlaybackKey(key)) throw new Error('refusing non-playback key ' + key);
+    return key;
+  }
+  function planPlaybackClear(keys) {
+    var list = Array.isArray(keys) ? keys : [];
+    return list.map(function (key) {
+      assertPlaybackKey(key);
+      return { key: key, action: 'clear', to: 0 };
+    });
+  }
   function dayKey(day) { return 'd' + day + '-' + EPOCH; }
   function legacyDayKey(day) { return 'd' + day; }
   function alltimeKey() { return 'alltime-' + EPOCH; }
@@ -177,6 +198,175 @@
     return { strip: true, stored: stored, action: ok ? v : 'cancel' };
   }
 
+  function createPlayPass() {
+    return {
+      listened: 0, counted: false, pending: false, failedUntil: 0,
+      lastTime: null, activeSourceId: null, closed: false, generation: 1
+    };
+  }
+
+  function clonePlayPass(pass) {
+    var src = pass || createPlayPass();
+    return {
+      listened: src.listened || 0,
+      counted: !!src.counted,
+      pending: !!src.pending,
+      failedUntil: src.failedUntil || 0,
+      lastTime: src.lastTime == null ? null : src.lastTime,
+      activeSourceId: src.activeSourceId || null,
+      closed: !!src.closed,
+      generation: src.generation || 1
+    };
+  }
+
+  function freshPlayPass(prev, sample) {
+    return {
+      listened: 0, counted: false, pending: false, failedUntil: 0, lastTime: null,
+      activeSourceId: sample && sample.sourceId || null, closed: false,
+      generation: ((prev && prev.generation) || 1) + 1
+    };
+  }
+
+  function mediaMs(sample) {
+    var t = Number(sample && sample.mediaTime);
+    if (!isFinite(t) || t < 0) return null;
+    return Math.round(t * 1000);
+  }
+
+  // Accumulate real on-site playback. The input pass is not mutated.
+  // Counted time is forward media time in steps of at most PLAY_MAX_STEP_MS
+  // while the preview is playing at 1x. Pauses, waits, and seeks add nothing.
+  // A second card for the same track does not add time unless it claims play.
+  // After a qualified pass, the track ending or a backward jump of more than
+  // one step opens a new pass so a genuine replay can count again.
+  function notePlaySample(pass, sample) {
+    var next = clonePlayPass(pass);
+    if (!sample || sample.kind !== 'onsite') return { pass: next, added: 0, reason: 'not-onsite' };
+    if (sample.claim && sample.sourceId) {
+      if (next.activeSourceId && next.activeSourceId !== sample.sourceId) {
+        next.activeSourceId = sample.sourceId;
+        next.lastTime = null;
+      } else if (!next.activeSourceId) next.activeSourceId = sample.sourceId;
+    }
+    if (sample.sourceId && next.activeSourceId && sample.sourceId !== next.activeSourceId) {
+      return { pass: clonePlayPass(pass), added: 0, reason: 'other-card' };
+    }
+    if (sample.sourceId && !next.activeSourceId) next.activeSourceId = sample.sourceId;
+    if (next.closed) next = freshPlayPass(next, sample);
+
+    if (sample.ended) {
+      next.lastTime = null;
+      if (next.counted || next.pending) next.closed = true;
+      return { pass: next, added: 0, reason: 'ended' };
+    }
+    if (sample.paused || sample.seeking || sample.waiting) {
+      next.lastTime = null;
+      return { pass: next, added: 0, reason: sample.paused ? 'paused' : sample.seeking ? 'seeking' : 'waiting' };
+    }
+    var rate = sample.playbackRate == null ? 1 : Number(sample.playbackRate);
+    if (!(rate > 0.99 && rate < 1.01)) {
+      next.lastTime = null;
+      return { pass: next, added: 0, reason: 'rate' };
+    }
+    var t = mediaMs(sample);
+    if (t == null) return { pass: next, added: 0, reason: 'bad-time' };
+    if (next.lastTime == null) {
+      next.lastTime = t;
+      return { pass: next, added: 0, reason: 'anchor' };
+    }
+    var delta = t - next.lastTime;
+    if (delta <= 0 || delta > PLAY_MAX_STEP_MS) {
+      var replay = delta < -PLAY_MAX_STEP_MS && (next.counted || next.pending);
+      next.lastTime = t;
+      if (replay) {
+        var opened = freshPlayPass(next, sample);
+        opened.lastTime = t;
+        return { pass: opened, added: 0, reason: 'replay' };
+      }
+      return { pass: next, added: 0, reason: delta <= 0 ? 'seek-back' : 'seek-forward' };
+    }
+    next.listened += delta;
+    next.lastTime = t;
+    return { pass: next, added: delta, reason: 'listen' };
+  }
+
+  function planPlayHit(state, pass) {
+    if (!pass || pass.listened < PLAY_QUALIFY_MS) return { op: 'none', reason: 'short' };
+    if (pass.counted) return { op: 'none', reason: 'counted' };
+    if (pass.pending) return { op: 'none', reason: 'pending' };
+    var now = state && state.now || 0;
+    if (pass.failedUntil && now < pass.failedUntil) return { op: 'none', reason: 'cooldown' };
+    if (!shouldRecord(state)) return { op: 'none', reason: !state || !state.authResolved ? 'auth' : 'owner' };
+    return { op: 'hit', reason: 'qualify' };
+  }
+
+  function markPlayPending(pass) {
+    var next = clonePlayPass(pass);
+    next.pending = true;
+    return next;
+  }
+
+  function markPlayCounted(pass) {
+    var next = clonePlayPass(pass);
+    next.pending = false;
+    next.counted = true;
+    next.failedUntil = 0;
+    return next;
+  }
+
+  function clearPlayPending(pass) {
+    var next = clonePlayPass(pass);
+    next.pending = false;
+    return next;
+  }
+
+  function markPlayFailed(pass, now) {
+    var next = clonePlayPass(pass);
+    next.pending = false;
+    next.counted = false;
+    next.failedUntil = (now || 0) + PLAY_RETRY_MS;
+    return next;
+  }
+
+  function claimAudioBinding(registry, audioId) {
+    if (!registry || audioId == null || audioId === '') return false;
+    if (registry[audioId]) return false;
+    registry[audioId] = 1;
+    return true;
+  }
+
+  function playbackSource(title) {
+    var key = playKey(title);
+    return {
+      title: title,
+      key: key,
+      namespace: NS,
+      epoch: EPOCH,
+      qualifySeconds: PLAY_QUALIFY_MS / 1000,
+      maxStepSeconds: PLAY_MAX_STEP_MS / 1000,
+      recommendedOp: 'info',
+      infoUrl: counterUrl('info', key),
+      getUrl: counterUrl('get', key),
+      increments: false
+    };
+  }
+
+  function playbackSources(titles) {
+    return (titles || []).map(playbackSource);
+  }
+
+  function playbackReadKeys(titles) {
+    return (titles || []).map(playKey);
+  }
+
+  function playDisplay(parsed) {
+    if (!parsed || parsed.ok !== true || typeof parsed.value !== 'number' || !isFinite(parsed.value)) {
+      return { state: 'unavailable', text: '', showNumber: false };
+    }
+    var n = Math.max(0, Math.trunc(parsed.value));
+    return { state: 'ready', text: String(n), showNumber: true, value: n };
+  }
+
   function memoryStorage(init) {
     var m = new Map(Object.entries(init || {}));
     return {
@@ -189,8 +379,10 @@
 
   return {
     EPOCH: EPOCH, NS: NS, DEFAULT_API: DEFAULT_API, EXCLUDE_KEY: EXCLUDE_KEY,
+    PLAY_QUALIFY_MS: PLAY_QUALIFY_MS, PLAY_MAX_STEP_MS: PLAY_MAX_STEP_MS, PLAY_RETRY_MS: PLAY_RETRY_MS,
     EXCLUDE_CONFIRM: EXCLUDE_CONFIRM, INCLUDE_CONFIRM: INCLUDE_CONFIRM, STORAGE_FAIL: STORAGE_FAIL,
-    apiBase: apiBase, slug: slug, likeKey: likeKey, legacyLikeKey: legacyLikeKey,
+    apiBase: apiBase, slug: slug, likeKey: likeKey, legacyLikeKey: legacyLikeKey, playKey: playKey,
+    isPlaybackKey: isPlaybackKey, assertPlaybackKey: assertPlaybackKey, planPlaybackClear: planPlaybackClear,
     dayKey: dayKey, legacyDayKey: legacyDayKey, alltimeKey: alltimeKey, legacyAlltimeKey: legacyAlltimeKey,
     likeStorageKey: likeStorageKey, legacyLikeStorageKey: legacyLikeStorageKey, visitHitStorageKey: visitHitStorageKey,
     counterUrl: counterUrl, installIdentityGate: installIdentityGate, identityDetail: identityDetail,
@@ -198,6 +390,11 @@
     privileges: privileges, coerceOp: coerceOp, selectOp: selectOp, interpretResponse: interpretResponse,
     readLiked: readLiked, writeLiked: writeLiked, planLikeClick: planLikeClick,
     readHitNames: readHitNames, writeHitNames: writeHitNames, claimHit: claimHit, unclaimHit: unclaimHit,
-    planVisitOps: planVisitOps, budapestDay: budapestDay, applyOwnerQuery: applyOwnerQuery, memoryStorage: memoryStorage
+    planVisitOps: planVisitOps, budapestDay: budapestDay, applyOwnerQuery: applyOwnerQuery,
+    createPlayPass: createPlayPass, clonePlayPass: clonePlayPass, notePlaySample: notePlaySample,
+    planPlayHit: planPlayHit, markPlayPending: markPlayPending, markPlayCounted: markPlayCounted,
+    clearPlayPending: clearPlayPending, markPlayFailed: markPlayFailed, claimAudioBinding: claimAudioBinding,
+    playbackSource: playbackSource, playbackSources: playbackSources, playbackReadKeys: playbackReadKeys,
+    playDisplay: playDisplay, memoryStorage: memoryStorage
   };
 });

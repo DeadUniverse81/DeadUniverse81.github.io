@@ -74,6 +74,142 @@ async function duMutate(op, key) {
   const parsed = await duRead(use, key);
   return Object.assign(parsed, { op: use });
 }
+// On-site qualified plays. One Abacus key per track title, shared by every card.
+// Spotify / YouTube / other outbound links, the ambient bed, and the teaser are not attached.
+const playPasses = new Map(), playViews = new Map(), playPainted = new Map(), playFetched = new Set(), playBusy = new Set();
+const boundAudios = typeof WeakSet === 'function' ? new WeakSet() : null;
+const onsitePreviews = [];
+let playBindSeq = 0;
+function playLabel(title, parsed) {
+  const shown = DUStats.playDisplay(parsed);
+  if (!shown.showNumber) return 'On-site play count unavailable for ' + title;
+  const n = shown.value;
+  return (n === 1 ? '1 on-site play' : n.toLocaleString('en-US') + ' on-site plays') + ' for ' + title;
+}
+function paintPlay(key, parsed) {
+  playPainted.set(key, parsed);
+  (playViews.get(key) || []).forEach(node => {
+    const shown = DUStats.playDisplay(parsed);
+    const pc = node.querySelector('.pc');
+    node.dataset.state = shown.state;
+    node.classList.toggle('ok', shown.showNumber);
+    pc.textContent = shown.showNumber ? shown.value.toLocaleString('en-US') : '';
+    node.setAttribute('aria-label', playLabel(node.dataset.title || '', parsed));
+  });
+}
+function loadPlay(title) {
+  const key = DUStats.playKey(title);
+  if (playFetched.has(key)) { if (playPainted.has(key)) paintPlay(key, playPainted.get(key)); return; }
+  playFetched.add(key);
+  duGet(key).then(parsed => paintPlay(key, parsed)).catch(() => paintPlay(key, { ok: false, value: null }));
+}
+function mountPlayStat(article, title) {
+  const row = article && article.querySelector('.tt-row');
+  if (!row || !title) return null;
+  let stats = row.querySelector('.tt-stats');
+  if (!stats) {
+    stats = document.createElement('div'); stats.className = 'tt-stats';
+    const like = row.querySelector('.like');
+    if (like) stats.append(like);
+    row.append(stats);
+  }
+  let stat = article.querySelector('.playstat');
+  if (!stat) {
+    stat = document.createElement('span');
+    stat.className = 'playstat';
+    stat.dataset.title = title;
+    stat.dataset.state = 'loading';
+    stat.setAttribute('role', 'status');
+    stat.setAttribute('aria-live', 'polite');
+    stat.setAttribute('aria-label', 'On-site plays loading for ' + title);
+    stat.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.25"/><path d="M10.15 8.35v7.3l6.05-3.65z"/></svg><span class="pc"></span>';
+  }
+  stat.dataset.title = title;
+  stat.dataset.key = DUStats.playKey(title);
+  const like = stats.querySelector('.like');
+  if (stat.parentNode !== stats) like ? stats.insertBefore(stat, like) : stats.append(stat);
+  const key = DUStats.playKey(title);
+  const list = playViews.get(key) || [];
+  if (list.indexOf(stat) < 0) list.push(stat);
+  playViews.set(key, list);
+  article.dataset.playKey = key;
+  loadPlay(title);
+  return stat;
+}
+function sampleOnsitePlay(title, sourceId, sample) {
+  const id = DUStats.slug(title);
+  if (!id) return null;
+  if (!playPasses.has(id)) playPasses.set(id, DUStats.createPlayPass());
+  const fields = Object.assign({}, sample || {});
+  delete fields.kind;
+  const result = DUStats.notePlaySample(playPasses.get(id), Object.assign({ kind: 'onsite', trackId: id, sourceId: sourceId, now: Date.now() }, fields));
+  playPasses.set(id, result.pass);
+  const plan = DUStats.planPlayHit(Object.assign({ now: Date.now() }, countState()), result.pass);
+  if (plan.op === 'hit') maybeRecordPlay(title);
+  return { reason: result.reason, added: result.added, listened: result.pass.listened, generation: result.pass.generation, counted: !!result.pass.counted, pending: !!result.pass.pending };
+}
+async function maybeRecordPlay(title) {
+  const slug = DUStats.slug(title);
+  if (!slug || playBusy.has(slug)) return;
+  let pass = playPasses.get(slug);
+  const plan = DUStats.planPlayHit(Object.assign({ now: Date.now() }, countState()), pass);
+  if (!pass || plan.op !== 'hit') return;
+  const gen = pass.generation;
+  const key = DUStats.playKey(title);
+  playBusy.add(slug);
+  playPasses.set(slug, DUStats.markPlayPending(pass));
+  try {
+    const parsed = await duMutate('hit', key);
+    const cur = playPasses.get(slug);
+    if (parsed && parsed.op === 'hit' && parsed.ok) {
+      paintPlay(key, parsed);
+      if (cur && cur.generation === gen) playPasses.set(slug, DUStats.markPlayCounted(cur));
+      return;
+    }
+    if (cur && cur.generation === gen) {
+      playPasses.set(slug, parsed && parsed.op === 'get' ? DUStats.clearPlayPending(cur) : DUStats.markPlayFailed(cur, Date.now()));
+    }
+  } catch (e) {
+    const cur = playPasses.get(slug);
+    if (cur && cur.generation === gen) playPasses.set(slug, DUStats.markPlayFailed(cur, Date.now()));
+  } finally { playBusy.delete(slug); }
+}
+function bindOnsitePreview(audio, title) {
+  if (!audio || !title) return false;
+  if (boundAudios) {
+    if (boundAudios.has(audio)) return false;
+    boundAudios.add(audio);
+  }
+  const sourceId = 'onsite-' + (++playBindSeq);
+  const send = extra => sampleOnsitePlay(title, sourceId, Object.assign({
+    mediaTime: Number(audio.currentTime) || 0,
+    paused: !!audio.paused,
+    seeking: !!audio.seeking,
+    ended: !!audio.ended,
+    waiting: false,
+    playbackRate: Number(audio.playbackRate) || 1
+  }, extra || {}));
+  audio.addEventListener('playing', () => send({ claim: true, paused: false, waiting: false, seeking: false, ended: false }));
+  audio.addEventListener('play', () => send({ claim: true }));
+  audio.addEventListener('timeupdate', () => send());
+  audio.addEventListener('pause', () => send({ paused: true }));
+  audio.addEventListener('seeking', () => send({ seeking: true }));
+  audio.addEventListener('waiting', () => send({ waiting: true }));
+  audio.addEventListener('stalled', () => send({ waiting: true }));
+  audio.addEventListener('ended', () => send({ ended: true, paused: true }));
+  onsitePreviews.push({ audio: audio, title: title, sourceId: sourceId });
+  return true;
+}
+function playPassSnapshot(title) {
+  const pass = playPasses.get(DUStats.slug(title));
+  if (!pass) return null;
+  return { listened: pass.listened, counted: !!pass.counted, pending: !!pass.pending, generation: pass.generation, activeSourceId: pass.activeSourceId, closed: !!pass.closed };
+}
+window.DU.mountPlayStat = mountPlayStat;
+window.DU.bindOnsitePreview = bindOnsitePreview;
+window.DU.sampleOnsitePlay = sampleOnsitePlay;
+window.DU.playPassSnapshot = playPassSnapshot;
+window.DU.onsitePreviews = onsitePreviews;
 function addLike(el, title) {
   const key = DUStats.likeKey(title);
   const liked = DUStats.readLiked(duStorage(), title);
@@ -109,7 +245,9 @@ function addLike(el, title) {
     setTimeout(() => b.classList.remove('pop'), 500);
   };
   const h = el.querySelector('.meta h3'), row = document.createElement('div'); row.className = 'tt-row';
-  h.parentNode.insertBefore(row, h); row.append(h, b);
+  const stats = document.createElement('div'); stats.className = 'tt-stats';
+  h.parentNode.insertBefore(row, h); row.append(h, stats); stats.append(b);
+  mountPlayStat(el, title);
 }
 // Latest Release config: titles listed here are moved (not duplicated) into the Latest Release section, in this order.
 const LATEST = ['Rewritten by Light'];
@@ -143,9 +281,13 @@ TRACKS.forEach(t => {
     rp.onclick = () => setLoop(!a.loop);
     const p = document.createElement('div'); p.className = 'player'; p.append(b, rp, bar, tm);
     el.querySelector('.meta').appendChild(p);
+    bindOnsitePreview(a, t.title);
   }
   addLike(el, t.title);
   const li = LATEST.indexOf(t.title); if (li >= 0 && lwrap) { el.classList.add('latest'); el.style.order = li; lwrap.appendChild(el); } else { const pi = PREV_LATEST.indexOf(t.title); if (pi >= 0) el.style.order = pi - PREV_LATEST.length; wrap.appendChild(el); }
+});
+document.addEventListener('du:identity', () => {
+  TRACKS.forEach(t => { const snap = playPassSnapshot(t.title); if (snap && snap.listened >= DUStats.PLAY_QUALIFY_MS && !snap.counted) maybeRecordPlay(t.title); });
 });
 
 // ---- Dust particles ----

@@ -353,6 +353,17 @@ body.cm-admin .cm-mod button{padding:.15em .5em;font-size:.55rem;border-color:rg
 .cm-vin{max-width:640px;margin:0 auto;box-sizing:border-box;border:1px solid rgba(217,164,65,.5);background:linear-gradient(160deg,rgba(217,164,65,.1),rgba(0,0,0,.5));box-shadow:0 0 30px rgba(217,164,65,.12);padding:1rem 1.2rem}
 @media (max-width:600px){.cm-vin{padding:.9rem}}
 /* v52: title + like never overlap */
-.tt-row{display:flex;align-items:flex-start;gap:.7rem}
-.tt-row h3,.track.latest .tt-row h3{flex:1 1 auto;min-width:0;overflow-wrap:break-word;padding-right:0}
-.tt-row .like{position:static;flex:none;margin:-.3em -.3em 0 0}
+.tt-row{display:flex;align-items:flex-start;gap:.7rem;flex-wrap:wrap;min-width:0;max-width:100%}
+.track .meta{min-width:0}
+.tt-row h3,.track.latest .tt-row h3{flex:1 1 auto;min-width:min(100%,9.5rem);overflow-wrap:anywhere;padding-right:0;margin-inline-end:-.3em}
+.tt-stats{display:flex;flex:none;align-items:flex-start;gap:.1rem;margin-left:auto;max-width:100%}
+.tt-row .like,.tt-stats .like{position:static;flex:none;margin:-.3em -.3em 0 0}
+/* v54: on-site play count, same row as the heart, never over the title */
+.playstat{display:inline-flex;align-items:center;gap:.32em;flex:none;margin:0;padding:.28em .2em 0;color:var(--gold);font-family:Michroma,sans-serif;font-size:.62rem;letter-spacing:.04em;line-height:1;white-space:nowrap;pointer-events:none}
+.playstat svg{width:1.05rem;height:1.05rem;flex:none}
+.playstat svg circle{fill:none;stroke:currentColor;stroke-width:1.45}
+.playstat svg path{fill:currentColor;stroke:none}
+.playstat .pc{color:var(--bone);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.playstat[data-state="loading"],.playstat[data-state="unavailable"]{opacity:.42}
+.playstat.ok{opacity:1}
+@media (max-width:600px){.playstat{font-size:.68rem;padding-top:.34em}.playstat svg{width:1.2rem;height:1.2rem}.tt-row{gap:.45rem}}
