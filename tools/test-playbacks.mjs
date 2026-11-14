@@ -228,11 +228,26 @@ try {
     previews: DU.onsitePreviews.length,
     ambient: DU.onsitePreviews.some(p => p.audio && p.audio.id === 'ambient'),
     teaser: !!document.querySelector('.lk-play:not([hidden])'),
+    teaserTitles: DU.onsitePreviews.map(p => p.title).filter(t => /traveller/i.test(t || '')),
+    teaserCard: (() => {
+      const card = document.querySelector('#exclusive .lockcard');
+      return {
+        title: (card && card.querySelector('h3') || {}).textContent || '',
+        note: (card && card.querySelector('.lk-sub') || {}).textContent || '',
+        player: !!(card && card.querySelector('.player')),
+        loop: !!(card && card.querySelector('.player button.rep')),
+        seek: !!(card && card.querySelector('input.seek')),
+        like: !!(card && card.querySelector('.like')),
+        playstat: !!(card && card.querySelector('.playstat')),
+        src: (card && card.querySelector('.player') || {}).dataset.preview || ''
+      };
+    })(),
     external: document.querySelectorAll('.track a[href*="spotify.com"], .track a[href*="youtube.com"]').length,
     keys: [...new Set([...document.querySelectorAll('.track')].map(el => el.dataset.playKey))].sort()
   })`);
   console.log('WIRED', JSON.stringify(wired));
-  if (wired.previews !== 8 || wired.ambient || wired.teaser) fail('on-site binding was not limited to the eight previews');
+  if (wired.previews !== 8 || wired.ambient || wired.teaser || wired.teaserTitles.length) fail('on-site binding was not limited to the eight previews');
+  if (wired.teaserCard.title !== 'The Traveller' || !/alpha preview/i.test(wired.teaserCard.note) || !wired.teaserCard.player || !wired.teaserCard.loop || !wired.teaserCard.seek || wired.teaserCard.like || wired.teaserCard.playstat || wired.teaserCard.src !== 'assets/tracks/the_traveller.mp3') fail('traveller teaser player ' + JSON.stringify(wired.teaserCard));
   if (wired.external < 8) fail('external links missing');
   if (wired.keys.length !== 8 || wired.keys.some(k => !k.startsWith('play-') || !k.endsWith('-e1'))) fail('play keys ' + wired.keys.join(','));
 
