@@ -253,6 +253,32 @@ function addLike(el, title) {
 const LATEST = ['Rewritten by Light'];
 // When replacing a LATEST song, put the replaced title here: it drops to the TOP of the regular list (then the normal TRACKS order follows).
 const PREV_LATEST = [];
+// Same player for catalog previews and the unreleased teaser: analyzer, repeat, seek.
+// count:false keeps the teaser off play keys and likes. It is not a Latest Release.
+function mountPreview(card, spec) {
+  const meta = card.querySelector('.meta') || card.querySelector('.lk-meta');
+  if (!meta || !spec.preview) return;
+  const a = new Audio(); a.preload = 'metadata'; a.src = spec.preview;
+  const b = document.createElement('button'); b.textContent = 'Play';
+  const bar = document.createElement('input'); Object.assign(bar, { type: 'range', min: 0, max: 1000, value: 0, className: 'seek' });
+  const tm = document.createElement('span'); tm.className = 'tm';
+  const fmt = s => isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00';
+  a.ontimeupdate = a.onloadedmetadata = () => { if (a.duration) bar.value = a.currentTime / a.duration * 1000; tm.textContent = `${fmt(a.currentTime)} / ${fmt(a.duration)}`; };
+  bar.oninput = () => { if (a.duration) a.currentTime = bar.value / 1000 * a.duration; };
+  a.onplay = () => { if (current && current !== a) current.pause(); current = a; hookAnalyser(a);
+    trackOn = true; document.dispatchEvent(new CustomEvent('du:play', { detail: { cover: spec.cover || '', el: card } })); document.body.classList.add('track-playing'); hideEnter(); fadeTo(0, 800); b.textContent = 'Pause'; };
+  a.onpause = a.onended = () => { b.textContent = 'Play'; if (current === a) { trackOn = false; document.body.classList.remove('track-playing');
+    if (!muted && ambOk) { amb.play().catch(() => {}); fadeTo(target(), 1500); } } };
+  b.onclick = () => a.paused ? a.play() : a.pause();
+  const rk = 'du-loop-' + spec.title, rp = document.createElement('button'); rp.className = 'rep'; rp.type = 'button';
+  rp.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4V7H7a2 2 0 0 0-2 2v3H3V9a4 4 0 0 1 4-4h10zM7 22l-4-4 4-4v3h10a2 2 0 0 0 2-2v-3h2v3a4 4 0 0 1-4 4H7z"/></svg>';
+  const setLoop = on => { a.loop = on; rp.classList.toggle('on', on); rp.setAttribute('aria-pressed', on); rp.title = rp.ariaLabel = on ? 'Repeat on' : 'Repeat off'; try { localStorage.setItem(rk, on ? '1' : '0'); } catch (e) {} };
+  let lsv = null; try { lsv = localStorage.getItem(rk); } catch (e) {} setLoop(lsv === '1');
+  rp.onclick = () => setLoop(!a.loop);
+  const p = document.createElement('div'); p.className = 'player'; p.dataset.preview = spec.preview; p.append(b, rp, bar, tm);
+  meta.appendChild(p);
+  if (spec.count !== false) bindOnsitePreview(a, spec.title);
+}
 const wrap = document.getElementById('tracks'), lwrap = document.getElementById('latestTracks');
 TRACKS.forEach(t => {
   const el = document.createElement('article'); el.className = 'track';
@@ -260,32 +286,13 @@ TRACKS.forEach(t => {
   el.innerHTML = (t.cover ? `<img src="${t.cover}" alt="${t.title} cover" loading="lazy">` : `<div class="nocover"></div>`) +
     `<div class="meta"><h3>${t.title}</h3><div class="year">${t.year || ''}</div>` +
     `<div class="links">${links.length ? links.map(([k, u]) => `<a class="lnk" href="${u}" target="_blank" rel="noopener">${ICONS[k] || ''}<span>${LABELS[k] || k}</span></a>`).join('') : '<span class="soon">Links coming soon</span>'}</div>${t.stream ? `<div class="plat">${Object.entries(t.stream).filter(([k])=>k!=='all').map(([k,u])=>`<a class="pl" href="${u}" target="_blank" rel="noopener" title="${SNAMES[k]}" aria-label="${SNAMES[k]}">${SICONS[k]}</a>`).join('')}${t.stream.all?`<a class="lnk pall" href="${t.stream.all}" target="_blank" rel="noopener">${SICONS.all}<span>All platforms</span></a>`:''}</div>` : ''}</div>`;
-  if (t.preview) {
-    // Track player: intro fades out & pauses, body.track-playing set, window.DU.analyser exposed for visuals
-    const a = new Audio(); a.preload = 'metadata'; a.src = t.preview;
-    const b = document.createElement('button'); b.textContent = 'Play';
-    const bar = document.createElement('input'); Object.assign(bar, { type: 'range', min: 0, max: 1000, value: 0, className: 'seek' });
-    const tm = document.createElement('span'); tm.className = 'tm';
-    const fmt = s => isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00';
-    a.ontimeupdate = a.onloadedmetadata = () => { if (a.duration) bar.value = a.currentTime / a.duration * 1000; tm.textContent = `${fmt(a.currentTime)} / ${fmt(a.duration)}`; };
-    bar.oninput = () => { if (a.duration) a.currentTime = bar.value / 1000 * a.duration; };
-    a.onplay = () => { if (current && current !== a) current.pause(); current = a; hookAnalyser(a);
-      trackOn = true; document.dispatchEvent(new CustomEvent('du:play', { detail: { cover: t.cover, el } })); document.body.classList.add('track-playing'); hideEnter(); fadeTo(0, 800); b.textContent = 'Pause'; };
-    a.onpause = a.onended = () => { b.textContent = 'Play'; if (current === a) { trackOn = false; document.body.classList.remove('track-playing');
-      if (!muted && ambOk) { amb.play().catch(() => {}); fadeTo(target(), 1500); } } };
-    b.onclick = () => a.paused ? a.play() : a.pause();
-    const rk = 'du-loop-' + t.title, rp = document.createElement('button'); rp.className = 'rep'; rp.type = 'button';
-    rp.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4V7H7a2 2 0 0 0-2 2v3H3V9a4 4 0 0 1 4-4h10zM7 22l-4-4 4-4v3h10a2 2 0 0 0 2-2v-3h2v3a4 4 0 0 1-4 4H7z"/></svg>';
-    const setLoop = on => { a.loop = on; rp.classList.toggle('on', on); rp.setAttribute('aria-pressed', on); rp.title = rp.ariaLabel = on ? 'Repeat on' : 'Repeat off'; try { localStorage.setItem(rk, on ? '1' : '0'); } catch (e) {} };
-    let lsv = null; try { lsv = localStorage.getItem(rk); } catch (e) {} setLoop(lsv === '1');
-    rp.onclick = () => setLoop(!a.loop);
-    const p = document.createElement('div'); p.className = 'player'; p.append(b, rp, bar, tm);
-    el.querySelector('.meta').appendChild(p);
-    bindOnsitePreview(a, t.title);
-  }
+  if (t.preview) mountPreview(el, t);
   addLike(el, t.title);
   const li = LATEST.indexOf(t.title); if (li >= 0 && lwrap) { el.classList.add('latest'); el.style.order = li; lwrap.appendChild(el); } else { const pi = PREV_LATEST.indexOf(t.title); if (pi >= 0) el.style.order = pi - PREV_LATEST.length; wrap.appendChild(el); }
 });
+const teaserCard = document.querySelector('#exclusive .lockcard');
+// Not a TRACKS entry, so the counter tools leave this title alone.
+if (teaserCard) mountPreview(teaserCard, { title: 'The Traveller', preview: 'assets/tracks/the_traveller.mp3', count: false });
 document.addEventListener('du:identity', () => {
   TRACKS.forEach(t => { const snap = playPassSnapshot(t.title); if (snap && snap.listened >= DUStats.PLAY_QUALIFY_MS && !snap.counted) maybeRecordPlay(t.title); });
 });
@@ -496,7 +503,7 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
   const fc = document.createElement('div'); fc.id = 'fcover'; fc.setAttribute('aria-hidden', 'true');
   const vb = document.getElementById('vizbg'); vb.after(fc);
   let curEl = null;
-  document.addEventListener('du:play', e => { const d = e.detail; curEl = d.el; if (d.cover) fc.style.backgroundImage = `url("${d.cover}")`; });
+  document.addEventListener('du:play', e => { const d = e.detail; curEl = d.el; fc.style.backgroundImage = d.cover ? `url("${d.cover}")` : 'none'; });
   // 3. spark follows the pointer (eased); touch: device tilt or idle drift
   const st = document.querySelector('.stage'); let tx = 0, ty = 0, x = 0, y = 0, ptr = false, tilt = false;
   if (st && !rm) {
@@ -516,15 +523,8 @@ if (sp) { document.documentElement.style.scrollBehavior = 'auto'; document.getEl
     h.classList.remove('glitch'); void h.offsetWidth; h.classList.add('glitch'); setTimeout(() => h.classList.remove('glitch'), 130); });
 })();
 // ===== v44 luxury =====
-// Teaser config: set src (e.g. 'assets/tracks/teaser.mp3') to enable the play button on the Coming soon card.
-const TEASER = { src: '' };
 (() => {
   const rm = matchMedia('(prefers-reduced-motion: reduce)').matches, fine = matchMedia('(hover:hover) and (pointer:fine)').matches;
-  // teaser
-  const tb = document.querySelector('.lk-play');
-  if (tb && TEASER.src) { const a = new Audio(TEASER.src); a.preload = 'none'; tb.hidden = false;
-    tb.onclick = () => { if (a.paused) { a.play(); tb.textContent = '❚❚ Teaser'; } else { a.pause(); tb.textContent = '▶ Teaser'; } };
-    a.onended = () => tb.textContent = '▶ Teaser'; }
   // portrait chrome overlay aspect
   const wp = document.querySelector('.wmp'), cp = document.querySelector('.chrome-p');
   const ar = () => { if (wp.naturalWidth) cp.style.setProperty('--wr', wp.naturalWidth + '/' + wp.naturalHeight); };

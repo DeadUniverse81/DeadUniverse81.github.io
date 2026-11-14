@@ -123,11 +123,13 @@ test('the page wires reads and hits through the policy and does not treat opt-ou
   assert.equal(communityJs.includes('du_count_exclude'), false);
   assert.match(communityJs, /publishIdentity\(!u \|\| adminKnown\)/);
   assert.match(communityJs, /identityDetail\(\{ resolved, isAdmin: admin/);
-  assert.match(indexHtml, /stats-policy\.js\?v=54/);
-  assert.match(indexHtml, /main\.js\?v=54/);
+  assert.match(indexHtml, /stats-policy\.js\?v=55/);
+  assert.match(indexHtml, /main\.js\?v=55/);
   assert.match(indexHtml, /community\.js\?v=53/);
-  assert.match(indexHtml, /style\.css\?v=54/);
-  assert.match(mainJs, /bindOnsitePreview\(a, t\.title\)/);
+  assert.match(indexHtml, /style\.css\?v=55/);
+  assert.match(mainJs, /bindOnsitePreview\(a, spec\.title\)/);
+  assert.match(mainJs, /the_traveller\.mp3/);
+  assert.match(mainJs, /count: false/);
   assert.match(mainJs, /kind: 'onsite'/);
   assert.equal(mainJs.includes('/hit/'), false);
   assert.equal(mainJs.includes('playKey(t.stream'), false);
