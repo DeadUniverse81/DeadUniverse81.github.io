@@ -47,6 +47,6 @@ A play is recorded only after 30 seconds of forward on-site preview audio (`asse
 
 Not counted: Spotify, YouTube, Apple Music, Deezer, SoundCloud, and other outbound links; the ambient intro; the unreleased teaser. Browsers with `localStorage.du_count_exclude` (`?du_owner=exclude`) and a signed-in Firebase `admins/{uid}` user still see the numbers and do not increment them. If auth never resolves, the listen is not recorded. If Abacus cannot be read, the card leaves the number blank instead of showing a fake 0.
 
-The Exclusive card plays `assets/tracks/the_traveller.mp3` (The Traveller, alpha preview, opening only). It uses the same player as the catalog — analyzer, repeat, seek — and is not a like, an on-site play, or a Latest Release.
+The Exclusive card plays `assets/tracks/the_traveller.mp3` (The Traveller, alpha preview, opening only) under `assets/covers/the_traveller.jpg`. It uses the same player as the catalog — analyzer, repeat, seek — and is not a like, an on-site play, or a Latest Release.
 
-Deployment is GitHub Pages from `main` (`CNAME` → deaduniversemusic.com). This change is cache-busted as `style.css`, `stats-policy.js`, and `main.js` `?v=56`. Merging to `main` publishes it. Do not reset visit, like, or Firebase data as part of that.
+Deployment is GitHub Pages from `main` (`CNAME` → deaduniversemusic.com). This change is cache-busted as `style.css`, `stats-policy.js`, and `main.js` `?v=57`. Merging to `main` publishes it. Do not reset visit, like, or Firebase data as part of that.
