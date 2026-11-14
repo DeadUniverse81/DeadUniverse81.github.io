@@ -292,7 +292,7 @@ TRACKS.forEach(t => {
 });
 const teaserCard = document.querySelector('#exclusive .lockcard');
 // Not a TRACKS entry, so the counter tools leave this title alone.
-if (teaserCard) mountPreview(teaserCard, { title: 'The Traveller', preview: 'assets/tracks/the_traveller.mp3', count: false });
+if (teaserCard) mountPreview(teaserCard, { title: 'The Traveller', cover: 'assets/covers/the_traveller.jpg', preview: 'assets/tracks/the_traveller.mp3', count: false });
 document.addEventListener('du:identity', () => {
   TRACKS.forEach(t => { const snap = playPassSnapshot(t.title); if (snap && snap.listened >= DUStats.PLAY_QUALIFY_MS && !snap.counted) maybeRecordPlay(t.title); });
 });

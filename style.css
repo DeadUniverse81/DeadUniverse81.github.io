@@ -379,3 +379,5 @@ body.cm-admin .cm-mod button{padding:.15em .5em;font-size:.55rem;border-color:rg
 body.track-playing .lockcard .player>button{border-color:var(--gold)}
 @media (max-width:600px){.lockcard .player button.rep{width:2.4rem;height:2.4rem}}
 @media (max-width:280px){.lockcard .player{flex-wrap:wrap}.lockcard .tm{flex-basis:100%;text-align:right}}
+/* v57: exclusive cover uses the same square crop as a catalog cover */
+.lockcard>img{width:100%;aspect-ratio:1;object-fit:cover;display:block;filter:grayscale(.3) contrast(1.1)}

@@ -239,7 +239,9 @@ try {
         seek: !!(card && card.querySelector('input.seek')),
         like: !!(card && card.querySelector('.like')),
         playstat: !!(card && card.querySelector('.playstat')),
-        src: (card && card.querySelector('.player') || {}).dataset.preview || ''
+        src: (card && card.querySelector('.player') || {}).dataset.preview || '',
+        cover: (card && card.querySelector('img') || {}).getAttribute ? (card.querySelector('img').getAttribute('src') || '') : '',
+        alt: (card && card.querySelector('img') || {}).getAttribute ? (card.querySelector('img').getAttribute('alt') || '') : ''
       };
     })(),
     external: document.querySelectorAll('.track a[href*="spotify.com"], .track a[href*="youtube.com"]').length,
@@ -247,7 +249,7 @@ try {
   })`);
   console.log('WIRED', JSON.stringify(wired));
   if (wired.previews !== 8 || wired.ambient || wired.teaser || wired.teaserTitles.length) fail('on-site binding was not limited to the eight previews');
-  if (wired.teaserCard.title !== 'The Traveller' || !/alpha preview/i.test(wired.teaserCard.note) || !wired.teaserCard.player || !wired.teaserCard.loop || !wired.teaserCard.seek || wired.teaserCard.like || wired.teaserCard.playstat || wired.teaserCard.src !== 'assets/tracks/the_traveller.mp3') fail('traveller teaser player ' + JSON.stringify(wired.teaserCard));
+  if (wired.teaserCard.title !== 'The Traveller' || !/alpha preview/i.test(wired.teaserCard.note) || !wired.teaserCard.player || !wired.teaserCard.loop || !wired.teaserCard.seek || wired.teaserCard.like || wired.teaserCard.playstat || wired.teaserCard.src !== 'assets/tracks/the_traveller.mp3' || wired.teaserCard.cover !== 'assets/covers/the_traveller.jpg' || wired.teaserCard.alt !== 'The Traveller cover art') fail('traveller teaser player ' + JSON.stringify(wired.teaserCard));
   if (wired.external < 8) fail('external links missing');
   if (wired.keys.length !== 8 || wired.keys.some(k => !k.startsWith('play-') || !k.endsWith('-e1'))) fail('play keys ' + wired.keys.join(','));
 
