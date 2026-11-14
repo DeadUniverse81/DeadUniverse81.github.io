@@ -49,4 +49,4 @@ Not counted: Spotify, YouTube, Apple Music, Deezer, SoundCloud, and other outbou
 
 The Exclusive card plays `assets/tracks/the_traveller.mp3` (The Traveller, alpha preview, opening only). It uses the same player as the catalog — analyzer, repeat, seek — and is not a like, an on-site play, or a Latest Release.
 
-Deployment is GitHub Pages from `main` (`CNAME` → deaduniversemusic.com). This change is cache-busted as `style.css`, `stats-policy.js`, and `main.js` `?v=55`. Merging to `main` publishes it. Do not reset visit, like, or Firebase data as part of that.
+Deployment is GitHub Pages from `main` (`CNAME` → deaduniversemusic.com). This change is cache-busted as `style.css`, `stats-policy.js`, and `main.js` `?v=56`. Merging to `main` publishes it. Do not reset visit, like, or Firebase data as part of that.

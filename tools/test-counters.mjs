@@ -123,10 +123,13 @@ test('the page wires reads and hits through the policy and does not treat opt-ou
   assert.equal(communityJs.includes('du_count_exclude'), false);
   assert.match(communityJs, /publishIdentity\(!u \|\| adminKnown\)/);
   assert.match(communityJs, /identityDetail\(\{ resolved, isAdmin: admin/);
-  assert.match(indexHtml, /stats-policy\.js\?v=55/);
-  assert.match(indexHtml, /main\.js\?v=55/);
+  assert.match(indexHtml, /stats-policy\.js\?v=56/);
+  assert.match(indexHtml, /main\.js\?v=56/);
   assert.match(indexHtml, /community\.js\?v=53/);
-  assert.match(indexHtml, /style\.css\?v=55/);
+  assert.match(indexHtml, /style\.css\?v=56/);
+  assert.match(indexHtml, /href="https:\/\/www\.youtube\.com\/@AdamMaczo" target="_blank" rel="noopener noreferrer">YouTube/);
+  assert.match(indexHtml, /href="https:\/\/x\.com\/Refused81" target="_blank" rel="noopener noreferrer">X/);
+  assert.match(indexHtml, /href="#">Spotify<\/a><a href="#">Instagram<\/a>/);
   assert.match(mainJs, /bindOnsitePreview\(a, spec\.title\)/);
   assert.match(mainJs, /the_traveller\.mp3/);
   assert.match(mainJs, /count: false/);
