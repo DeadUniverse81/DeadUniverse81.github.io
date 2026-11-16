@@ -132,7 +132,7 @@ test('the page wires reads and hits through the policy and does not treat opt-ou
   assert.match(indexHtml, /href="https:\/\/x\.com\/Refused81" target="_blank" rel="noopener noreferrer">X/);
   assert.match(indexHtml, /href="#">Spotify<\/a><a href="#">Instagram<\/a>/);
   assert.match(mainJs, /bindOnsitePreview\(a, spec\.title\)/);
-  assert.match(mainJs, /assets\/tracks\/the_traveller\.mp3\?v=61/);
+  assert.match(mainJs, /assets\/tracks\/the_traveller\.flac\?v=61/);
   assert.match(mainJs, /count: false/);
   assert.match(mainJs, /kind: 'onsite'/);
   assert.equal(mainJs.includes('/hit/'), false);
