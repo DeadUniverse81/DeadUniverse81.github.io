@@ -32,6 +32,8 @@ Each catalog title has one shared counter, including when the same title is show
 
 | Title | Read-only key |
 | --- | --- |
+| Darkness Cover Me (darkpop version) | `play-darkness-cover-me-darkpop-version-e1` |
+| Darkness Cover Me (soul version#01) | `play-darkness-cover-me-soul-version-01-e1` |
 | Rewritten by Light | `play-rewritten-by-light-e1` |
 | Erased by Light | `play-erased-by-light-e1` |
 | Ashes in My Veins | `play-ashes-in-my-veins-e1` |
@@ -47,6 +49,6 @@ A play is recorded only after 30 seconds of forward on-site preview audio (`asse
 
 Not counted: Spotify, YouTube, Apple Music, Deezer, SoundCloud, and other outbound links; the ambient intro; the unreleased teaser. Browsers with `localStorage.du_count_exclude` (`?du_owner=exclude`) and a signed-in Firebase `admins/{uid}` user still see the numbers and do not increment them. If auth never resolves, the listen is not recorded. If Abacus cannot be read, the card leaves the number blank instead of showing a fake 0.
 
-The Exclusive card plays `assets/tracks/the_traveller.flac?v=63` (The Traveller, beta preview, opening only) under `assets/covers/the_traveller.jpg`. The player reads the file duration; it is not hardcoded. It uses the same player as the catalog — analyzer, repeat, seek — and is not a like, an on-site play, or a Latest Release.
+The Exclusive card plays `assets/tracks/the_traveller.flac?v=64` (The Traveller, beta preview, opening only) under `assets/covers/the_traveller.jpg`. The player reads the file duration; it is not hardcoded. It uses the same player as the catalog — analyzer, repeat, seek — and is not a like, an on-site play, or a Latest Release.
 
-Deployment is GitHub Pages from `main` (`CNAME` → deaduniversemusic.com). This change is cache-busted as `style.css`, `stats-policy.js`, and `main.js` `?v=63`. Merging to `main` publishes it. Do not reset visit, like, or Firebase data as part of that.
+Deployment is GitHub Pages from `main` (`CNAME` → deaduniversemusic.com). This change is cache-busted as `style.css`, `stats-policy.js`, and `main.js` `?v=64`. Merging to `main` publishes it. Do not reset visit, like, or Firebase data as part of that.

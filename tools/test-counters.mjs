@@ -123,16 +123,16 @@ test('the page wires reads and hits through the policy and does not treat opt-ou
   assert.equal(communityJs.includes('du_count_exclude'), false);
   assert.match(communityJs, /publishIdentity\(!u \|\| adminKnown\)/);
   assert.match(communityJs, /identityDetail\(\{ resolved, isAdmin: admin/);
-  assert.match(indexHtml, /stats-policy\.js\?v=63/);
-  assert.match(indexHtml, /main\.js\?v=63/);
+  assert.match(indexHtml, /stats-policy\.js\?v=64/);
+  assert.match(indexHtml, /main\.js\?v=64/);
   assert.match(indexHtml, /community\.js\?v=53/);
-  assert.match(indexHtml, /style\.css\?v=63/);
+  assert.match(indexHtml, /style\.css\?v=64/);
   assert.match(indexHtml, /src="assets\/covers\/the_traveller\.jpg" alt="The Traveller cover art"/);
   assert.match(indexHtml, /href="https:\/\/www\.youtube\.com\/@AdamMaczo" target="_blank" rel="noopener noreferrer">YouTube/);
   assert.match(indexHtml, /href="https:\/\/x\.com\/Refused81" target="_blank" rel="noopener noreferrer">X/);
   assert.match(indexHtml, /href="#">Spotify<\/a><a href="#">Instagram<\/a>/);
   assert.match(mainJs, /bindOnsitePreview\(a, spec\.title\)/);
-  assert.match(mainJs, /assets\/tracks\/the_traveller\.flac\?v=63/);
+  assert.match(mainJs, /assets\/tracks\/the_traveller\.flac\?v=64/);
   assert.match(mainJs, /count: false/);
   assert.match(mainJs, /kind: 'onsite'/);
   assert.equal(mainJs.includes('/hit/'), false);
@@ -142,6 +142,7 @@ test('the page wires reads and hits through the policy and does not treat opt-ou
   assert.equal(fs.readFileSync(path.join(root, 'CNAME'), 'utf8').trim(), 'deaduniversemusic.com');
   const titles = titlesFromMain(mainJs);
   assert.deepEqual(titles, [
+    'Darkness Cover Me (darkpop version)', 'Darkness Cover Me (soul version#01)',
     'Rewritten by Light', 'Erased by Light', 'Ashes in My Veins', 'The Monolith',
     'The Oblivion', 'b4bYLon', 'Burn the World Down', 'Lift Me Up'
   ]);

@@ -174,7 +174,7 @@ try {
   if (info.exclude !== '1') fail('exclude flag was not stored');
   if (info.search.includes('du_owner')) fail('owner param was not stripped');
   if (!info.confirms.some(m => m.includes('does not grant admin access'))) fail('confirm copy drifted');
-  if (info.tracks !== 8 || !info.audio || !info.ogg || !info.nebula || !info.community || info.enter !== 'ENTER') fail('layout/audio/community missing');
+  if (info.tracks !== 10 || !info.audio || !info.ogg || !info.nebula || !info.community || info.enter !== 'ENTER') fail('layout/audio/community missing');
   if (info.likedOn !== 0) fail('a heart was filled before a recorded like');
   if (info.counts.some(c => c !== '0')) fail('like counts were not zero: ' + info.counts.join(','));
   await evalValue(excluded.cdp, `document.querySelector('.like').click()`);
