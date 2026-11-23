@@ -214,9 +214,9 @@ try {
   requests.length = 0;
   const guest = await runCase(9342, fs.mkdtempSync(path.join(os.tmpdir(), 'du-play-guest-')), api, `http://127.0.0.1:${SITE}/?scroll=music`);
   chromes.push(guest.chrome);
-  const ready = await poll(guest.cdp, `[...document.querySelectorAll('.playstat.ok')].length + ':' + (document.querySelector('.playstat .pc') || {}).textContent`, s => s && s.startsWith('8:') && s.endsWith(':0'), 15000);
+  const ready = await poll(guest.cdp, `[...document.querySelectorAll('.playstat.ok')].length + ':' + (document.querySelector('.playstat .pc') || {}).textContent`, s => s && s.startsWith('10:') && s.endsWith(':0'), 15000);
   console.log('READY', ready);
-  if (ready !== '8:0') fail('play counts did not show a real zero: ' + ready);
+  if (ready !== '10:0') fail('play counts did not show a real zero: ' + ready);
   const ident = await poll(guest.cdp, `window.DU && DU.identity && DU.identity.resolved ? 'yes' : ''`, s => s === 'yes', 12000);
   if (ident !== 'yes') {
     await evalValue(guest.cdp, `DUStats.deliverIdentity(window, DUStats.identityDetail({ resolved: true, isAdmin: false, signedIn: false }))`);
@@ -248,10 +248,10 @@ try {
     keys: [...new Set([...document.querySelectorAll('.track')].map(el => el.dataset.playKey))].sort()
   })`);
   console.log('WIRED', JSON.stringify(wired));
-  if (wired.previews !== 8 || wired.ambient || wired.teaser || wired.teaserTitles.length) fail('on-site binding was not limited to the eight previews');
-  if (wired.teaserCard.title !== 'The Traveller' || !/beta preview/i.test(wired.teaserCard.note) || !wired.teaserCard.player || !wired.teaserCard.loop || !wired.teaserCard.seek || wired.teaserCard.like || wired.teaserCard.playstat || wired.teaserCard.src !== 'assets/tracks/the_traveller.flac?v=63' || wired.teaserCard.cover !== 'assets/covers/the_traveller.jpg' || wired.teaserCard.alt !== 'The Traveller cover art') fail('traveller teaser player ' + JSON.stringify(wired.teaserCard));
+  if (wired.previews !== 10 || wired.ambient || wired.teaser || wired.teaserTitles.length) fail('on-site binding was not limited to the catalog previews');
+  if (wired.teaserCard.title !== 'The Traveller' || !/beta preview/i.test(wired.teaserCard.note) || !wired.teaserCard.player || !wired.teaserCard.loop || !wired.teaserCard.seek || wired.teaserCard.like || wired.teaserCard.playstat || wired.teaserCard.src !== 'assets/tracks/the_traveller.flac?v=64' || wired.teaserCard.cover !== 'assets/covers/the_traveller.jpg' || wired.teaserCard.alt !== 'The Traveller cover art') fail('traveller teaser player ' + JSON.stringify(wired.teaserCard));
   if (wired.external < 8) fail('external links missing');
-  if (wired.keys.length !== 8 || wired.keys.some(k => !k.startsWith('play-') || !k.endsWith('-e1'))) fail('play keys ' + wired.keys.join(','));
+  if (wired.keys.length !== 10 || wired.keys.some(k => !k.startsWith('play-') || !k.endsWith('-e1'))) fail('play keys ' + wired.keys.join(','));
 
   async function layout(width, height, mobile, longTitle) {
     await guest.cdp.send('Emulation.clearDeviceMetricsOverride').catch(() => {});
@@ -416,7 +416,7 @@ try {
   if (ashesReplayHits !== 2) fail('replay hit count ' + ashesReplayHits);
 
   const dup = await evalValue(guest.cdp, `(() => {
-    const card = document.querySelector('#latestTracks .track');
+    const card = [...document.querySelectorAll('#tracks .track')].find(el => el.dataset.playKey === 'play-rewritten-by-light-e1');
     const clone = card.cloneNode(true);
     document.getElementById('tracks').prepend(clone);
     DU.mountPlayStat(clone, 'Rewritten by Light');
