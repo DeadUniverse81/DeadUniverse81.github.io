@@ -1,22 +1,26 @@
 // ---- Tracks: add new entries here (see README) ----
 const TRACKS = [
-  { title: "Darkness Cover Me (darkpop version)", year: 2026, cover: "assets/covers/darkness_cover_me_sadcore.jpg", preview: "assets/tracks/darkness_cover_me_darkpop.flac?v=64" },
-  { title: "Darkness Cover Me (soul version#01)", year: 2026, cover: "assets/covers/darkness_cover_me_soul02_hands.jpg", preview: "assets/tracks/darkness_cover_me_soul01.flac?v=64" },
-  { stream: {"spotify": "https://open.spotify.com/album/6Y90VZKQp7oHzbVDsFJxqF", "apple": "https://music.apple.com/us/album/rewritten-by-light/6826907103?i=6826907104", "deezer": "https://www.deezer.com/track/4370428611", "all": "https://distrokid.com/hyperfollow/deaduniverse/rewritten-by-light"}, title: "Rewritten by Light", year: 2026, cover: "assets/covers/rewritten_by_light.jpg", preview: "assets/tracks/rewritten_by_light.flac?v=64",
+  { title: "Let Me Thaw", year: 2026, cover: "assets/covers/let_me_thaw.jpg", preview: "assets/tracks/let_me_thaw.flac?v=65",
+    links: { soundcloud: "https://soundcloud.com/refused-1/let-me-thaw-01-eq32" } },
+  { title: "Darkness Cover Me (sadcore version)", countAs: "Darkness Cover Me (darkpop version)", year: 2026, cover: "assets/covers/darkness_cover_me_sadcore.jpg", preview: "assets/tracks/darkness_cover_me_darkpop.flac?v=65",
+    links: { soundcloud: "https://soundcloud.com/refused-1/darkness-cover-me-1-original" } },
+  { title: "Darkness Cover Me (modern soul version#02)", countAs: "Darkness Cover Me (soul version#01)", year: 2026, cover: "assets/covers/darkness_cover_me_soul02_hands.jpg", preview: "assets/tracks/darkness_cover_me_soul01.flac?v=65",
+    links: { soundcloud: "https://soundcloud.com/refused-1/darkness-cover-me-2-modern" } },
+  { stream: {"spotify": "https://open.spotify.com/album/6Y90VZKQp7oHzbVDsFJxqF", "apple": "https://music.apple.com/us/album/rewritten-by-light/6826907103?i=6826907104", "deezer": "https://www.deezer.com/track/4370428611", "all": "https://distrokid.com/hyperfollow/deaduniverse/rewritten-by-light"}, title: "Rewritten by Light", year: 2026, cover: "assets/covers/rewritten_by_light.jpg", preview: "assets/tracks/rewritten_by_light.flac?v=65",
     links: { youtube: "https://www.youtube.com/watch?v=AVtK1Isjh_c", soundcloud: "https://soundcloud.com/refused-1/rewritten-by-light" } },
-  { stream: {"spotify": "https://open.spotify.com/album/5fPeB4Pe5xrTWuNqfDFBQp", "apple": "https://music.apple.com/us/album/erased-by-light/6824302828?i=6824302829", "deezer": "https://www.deezer.com/track/4355829222", "all": "https://distrokid.com/hyperfollow/deaduniverse/erase-by-light"}, title: "Erased by Light", year: 2026, cover: "assets/covers/erased_by_light.jpg", preview: "assets/tracks/erased_by_light.flac?v=64",
+  { stream: {"spotify": "https://open.spotify.com/album/5fPeB4Pe5xrTWuNqfDFBQp", "apple": "https://music.apple.com/us/album/erased-by-light/6824302828?i=6824302829", "deezer": "https://www.deezer.com/track/4355829222", "all": "https://distrokid.com/hyperfollow/deaduniverse/erase-by-light"}, title: "Erased by Light", year: 2026, cover: "assets/covers/erased_by_light.jpg", preview: "assets/tracks/erased_by_light.flac?v=65",
     links: { youtube: "https://www.youtube.com/watch?v=iFYff9YwKm0", soundcloud: "https://soundcloud.com/refused-1/erased-by-light-01-weekend-022" } },
-  { stream: {"spotify": "https://open.spotify.com/album/1Ne4FZqvPvIixY5lD03g9v", "apple": "https://music.apple.com/us/album/ashes-in-my-veins/6823783637?i=6823783638", "deezer": "https://www.deezer.com/track/4353453552", "all": "https://distrokid.com/hyperfollow/deaduniverse/ashes-in-my-veins"}, title: "Ashes in My Veins", year: 2026, cover: "assets/covers/ashes_in_my_veins.jpg", preview: "assets/tracks/ashes_in_my_veins.flac?v=64",
+  { stream: {"spotify": "https://open.spotify.com/album/1Ne4FZqvPvIixY5lD03g9v", "apple": "https://music.apple.com/us/album/ashes-in-my-veins/6823783637?i=6823783638", "deezer": "https://www.deezer.com/track/4353453552", "all": "https://distrokid.com/hyperfollow/deaduniverse/ashes-in-my-veins"}, title: "Ashes in My Veins", year: 2026, cover: "assets/covers/ashes_in_my_veins.jpg", preview: "assets/tracks/ashes_in_my_veins.flac?v=65",
     links: { youtube: "https://www.youtube.com/watch?v=DcL-ZKZnhv0", soundcloud: "https://soundcloud.com/refused-1/ashes-in-my-veins-1-muse-eq" } },
-  { stream: {"spotify": "https://open.spotify.com/album/0UfDsJZ857CiIa2zwdBdEm", "apple": "https://music.apple.com/us/album/the-monolith-alpha-version/1893746977?i=1893746979", "deezer": "https://www.deezer.com/track/3963317601", "all": "https://distrokid.com/hyperfollow/deaduniverse/the-monolith-alpha-version"}, title: "The Monolith", year: 2026, cover: "assets/covers/the_monolith.jpg", preview: "assets/tracks/the_monolith.flac?v=64",
+  { stream: {"spotify": "https://open.spotify.com/album/0UfDsJZ857CiIa2zwdBdEm", "apple": "https://music.apple.com/us/album/the-monolith-alpha-version/1893746977?i=1893746979", "deezer": "https://www.deezer.com/track/3963317601", "all": "https://distrokid.com/hyperfollow/deaduniverse/the-monolith-alpha-version"}, title: "The Monolith", year: 2026, cover: "assets/covers/the_monolith.jpg", preview: "assets/tracks/the_monolith.flac?v=65",
     links: { youtube: "https://www.youtube.com/watch?v=ovm1lZ5976s", soundcloud: "https://soundcloud.com/refused-1/the-monolith-alpha-version" } },
-  { title: "The Oblivion", year: 2026, cover: "assets/covers/the_oblivion.jpg", preview: "assets/tracks/the_oblivion.flac?v=64",
+  { title: "The Oblivion", year: 2026, cover: "assets/covers/the_oblivion.jpg", preview: "assets/tracks/the_oblivion.flac?v=65",
     links: { youtube: "https://www.youtube.com/watch?v=2Q01_zhEoL4", soundcloud: "https://soundcloud.com/refused-1/oblivion-alpha-version" } },
-  { stream: {"spotify": "https://open.spotify.com/album/0TqRAtYOFdTVfnuDSHtxCI", "apple": "https://music.apple.com/us/album/b4bylon/1871736803?i=1871736805", "deezer": "https://www.deezer.com/track/3794861372", "all": "https://distrokid.com/hyperfollow/deaduniverse/b4bylon"}, title: "b4bYLon", year: 2026, cover: "assets/covers/b4bylon.jpg", preview: "assets/tracks/b4bylon.flac?v=64",
+  { stream: {"spotify": "https://open.spotify.com/album/0TqRAtYOFdTVfnuDSHtxCI", "apple": "https://music.apple.com/us/album/b4bylon/1871736803?i=1871736805", "deezer": "https://www.deezer.com/track/3794861372", "all": "https://distrokid.com/hyperfollow/deaduniverse/b4bylon"}, title: "b4bYLon", year: 2026, cover: "assets/covers/b4bylon.jpg", preview: "assets/tracks/b4bylon.flac?v=65",
     links: { youtube: "https://www.youtube.com/watch?v=ut_Tawd4zdE", soundcloud: "https://soundcloud.com/refused-1/b4bylon" } },
-  { stream: {"spotify": "https://open.spotify.com/album/63igpIJXszhaylfHUn6m2p", "apple": "https://music.apple.com/us/album/burn-the-world-down/6789880414?i=6789880415", "deezer": "https://www.deezer.com/track/4147560652", "all": "https://distrokid.com/hyperfollow/deaduniverse/burn-the-world-down"}, title: "Burn the World Down", year: 2026, cover: "assets/covers/burn_the_world_down.jpg", preview: "assets/tracks/burn_the_world_down.flac?v=64",
+  { stream: {"spotify": "https://open.spotify.com/album/63igpIJXszhaylfHUn6m2p", "apple": "https://music.apple.com/us/album/burn-the-world-down/6789880414?i=6789880415", "deezer": "https://www.deezer.com/track/4147560652", "all": "https://distrokid.com/hyperfollow/deaduniverse/burn-the-world-down"}, title: "Burn the World Down", year: 2026, cover: "assets/covers/burn_the_world_down.jpg", preview: "assets/tracks/burn_the_world_down.flac?v=65",
     links: { youtube: "https://www.youtube.com/watch?v=yRFk82_a2Kk", soundcloud: "https://soundcloud.com/refused-1/burn-the-world-down" } },
-  { stream: {"spotify": "https://open.spotify.com/album/59Sz1HPFYhqaP9zeHtTOnC", "apple": "https://music.apple.com/us/album/lift-me-up-original-version/1883848895?i=1883848896", "deezer": "https://www.deezer.com/track/3890703341", "all": "https://distrokid.com/hyperfollow/deaduniverse/lift-me-up-original-version"}, title: "Lift Me Up", year: 2026, cover: "assets/covers/lift_me_up.jpg", preview: "assets/tracks/lift_me_up.flac?v=64",
+  { stream: {"spotify": "https://open.spotify.com/album/59Sz1HPFYhqaP9zeHtTOnC", "apple": "https://music.apple.com/us/album/lift-me-up-original-version/1883848895?i=1883848896", "deezer": "https://www.deezer.com/track/3890703341", "all": "https://distrokid.com/hyperfollow/deaduniverse/lift-me-up-original-version"}, title: "Lift Me Up", year: 2026, cover: "assets/covers/lift_me_up.jpg", preview: "assets/tracks/lift_me_up.flac?v=65",
     links: { youtube: "https://www.youtube.com/watch?v=pqeeRgr7104", soundcloud: "https://soundcloud.com/refused-1/lift-me-up-original-version" } },
 ];
 
@@ -212,9 +216,10 @@ window.DU.bindOnsitePreview = bindOnsitePreview;
 window.DU.sampleOnsitePlay = sampleOnsitePlay;
 window.DU.playPassSnapshot = playPassSnapshot;
 window.DU.onsitePreviews = onsitePreviews;
-function addLike(el, title) {
-  const key = DUStats.likeKey(title);
-  const liked = DUStats.readLiked(duStorage(), title);
+function addLike(el, title, countAs) {
+  const id = countAs || title;
+  const key = DUStats.likeKey(id);
+  const liked = DUStats.readLiked(duStorage(), id);
   const b = document.createElement('button'); b.className = 'like' + (liked ? ' on' : ''); b.type = 'button';
   b.setAttribute('aria-label', 'Like ' + title); b.setAttribute('aria-pressed', liked ? 'true' : 'false');
   b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.3 5.4 3.2 1.5-1.9 3.3-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z"/></svg><span class="lc"></span>';
@@ -231,14 +236,14 @@ function addLike(el, title) {
     const decision = DUStats.planLikeClick({
       browserExcluded: DUStats.isBrowserExcluded(duStorage()),
       authResolved: !!ident.resolved, isAdmin: !!ident.admin,
-      alreadyLiked: DUStats.readLiked(duStorage(), title)
+      alreadyLiked: DUStats.readLiked(duStorage(), id)
     });
     if (decision.op !== 'hit' || DUStats.selectOp('hit', countState()) !== 'hit') { b.dataset.busy = ''; return; }
     b.classList.add('on', 'pop'); b.setAttribute('aria-pressed', 'true');
     try {
       const parsed = await duMutate('hit', key);
       if (parsed.op !== 'hit' || !parsed.ok) throw new Error('like');
-      if (decision.persist) DUStats.writeLiked(duStorage(), title);
+      if (decision.persist) DUStats.writeLiked(duStorage(), id);
       show(parsed.value);
     } catch (e) {
       b.classList.remove('on'); b.setAttribute('aria-pressed', 'false');
@@ -249,12 +254,12 @@ function addLike(el, title) {
   const h = el.querySelector('.meta h3'), row = document.createElement('div'); row.className = 'tt-row';
   const stats = document.createElement('div'); stats.className = 'tt-stats';
   h.parentNode.insertBefore(row, h); row.append(h, stats); stats.append(b);
-  mountPlayStat(el, title);
+  mountPlayStat(el, id);
 }
 // Latest Release config: titles listed here are moved (not duplicated) into the Latest Release section, in this order.
-const LATEST = ['Darkness Cover Me (darkpop version)'];
+const LATEST = ['Let Me Thaw'];
 // When replacing a LATEST song, put the replaced title here: it drops to the TOP of the regular list (then the normal TRACKS order follows).
-const PREV_LATEST = ['Darkness Cover Me (soul version#01)', 'Rewritten by Light'];
+const PREV_LATEST = ['Darkness Cover Me (sadcore version)', 'Darkness Cover Me (modern soul version#02)', 'Rewritten by Light'];
 // Same player for catalog previews and the unreleased teaser: analyzer, repeat, seek.
 // count:false keeps the teaser off play keys and likes. It is not a Latest Release.
 function mountPreview(card, spec) {
@@ -279,7 +284,7 @@ function mountPreview(card, spec) {
   rp.onclick = () => setLoop(!a.loop);
   const p = document.createElement('div'); p.className = 'player'; p.dataset.preview = spec.preview; p.append(b, rp, bar, tm);
   meta.appendChild(p);
-  if (spec.count !== false) bindOnsitePreview(a, spec.title);
+  if (spec.count !== false) bindOnsitePreview(a, spec.countAs || spec.title);
 }
 const wrap = document.getElementById('tracks'), lwrap = document.getElementById('latestTracks');
 TRACKS.forEach(t => {
@@ -289,14 +294,14 @@ TRACKS.forEach(t => {
     `<div class="meta"><h3>${t.title}</h3><div class="year">${t.year || ''}</div>` +
     `<div class="links">${links.length ? links.map(([k, u]) => `<a class="lnk" href="${u}" target="_blank" rel="noopener">${ICONS[k] || ''}<span>${LABELS[k] || k}</span></a>`).join('') : '<span class="soon">Links coming soon</span>'}</div>${t.stream ? `<div class="plat">${Object.entries(t.stream).filter(([k])=>k!=='all').map(([k,u])=>`<a class="pl" href="${u}" target="_blank" rel="noopener" title="${SNAMES[k]}" aria-label="${SNAMES[k]}">${SICONS[k]}</a>`).join('')}${t.stream.all?`<a class="lnk pall" href="${t.stream.all}" target="_blank" rel="noopener">${SICONS.all}<span>All platforms</span></a>`:''}</div>` : ''}</div>`;
   if (t.preview) mountPreview(el, t);
-  addLike(el, t.title);
+  addLike(el, t.title, t.countAs);
   const li = LATEST.indexOf(t.title); if (li >= 0 && lwrap) { el.classList.add('latest'); el.style.order = li; lwrap.appendChild(el); } else { const pi = PREV_LATEST.indexOf(t.title); if (pi >= 0) el.style.order = pi - PREV_LATEST.length; wrap.appendChild(el); }
 });
 const teaserCard = document.querySelector('#exclusive .lockcard');
 // Not a TRACKS entry, so the counter tools leave this title alone.
-if (teaserCard) mountPreview(teaserCard, { title: 'The Traveller', cover: 'assets/covers/the_traveller.jpg', preview: 'assets/tracks/the_traveller.flac?v=64', count: false });
+if (teaserCard) mountPreview(teaserCard, { title: 'The Traveller', cover: 'assets/covers/the_traveller.jpg', preview: 'assets/tracks/the_traveller.flac?v=65', count: false });
 document.addEventListener('du:identity', () => {
-  TRACKS.forEach(t => { const snap = playPassSnapshot(t.title); if (snap && snap.listened >= DUStats.PLAY_QUALIFY_MS && !snap.counted) maybeRecordPlay(t.title); });
+  TRACKS.forEach(t => { const name = t.countAs || t.title; const snap = playPassSnapshot(name); if (snap && snap.listened >= DUStats.PLAY_QUALIFY_MS && !snap.counted) maybeRecordPlay(name); });
 });
 
 // ---- Dust particles ----
