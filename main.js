@@ -1,7 +1,7 @@
 // ---- Tracks: add new entries here (see README) ----
 const TRACKS = [
-  { title: "Darkness Cover Me (darkpop version)", year: 2026, cover: "assets/covers/darkness_cover_me_darkpop.jpg", preview: "assets/tracks/darkness_cover_me_darkpop.flac?v=64" },
-  { title: "Darkness Cover Me (soul version#01)", year: 2026, cover: "assets/covers/darkness_cover_me_soul01_hands.jpg", preview: "assets/tracks/darkness_cover_me_soul01.flac?v=64" },
+  { title: "Darkness Cover Me (darkpop version)", year: 2026, cover: "assets/covers/darkness_cover_me_sadcore.jpg", preview: "assets/tracks/darkness_cover_me_darkpop.flac?v=64" },
+  { title: "Darkness Cover Me (soul version#01)", year: 2026, cover: "assets/covers/darkness_cover_me_soul02_hands.jpg", preview: "assets/tracks/darkness_cover_me_soul01.flac?v=64" },
   { stream: {"spotify": "https://open.spotify.com/album/6Y90VZKQp7oHzbVDsFJxqF", "apple": "https://music.apple.com/us/album/rewritten-by-light/6826907103?i=6826907104", "deezer": "https://www.deezer.com/track/4370428611", "all": "https://distrokid.com/hyperfollow/deaduniverse/rewritten-by-light"}, title: "Rewritten by Light", year: 2026, cover: "assets/covers/rewritten_by_light.jpg", preview: "assets/tracks/rewritten_by_light.flac?v=64",
     links: { youtube: "https://www.youtube.com/watch?v=AVtK1Isjh_c", soundcloud: "https://soundcloud.com/refused-1/rewritten-by-light" } },
   { stream: {"spotify": "https://open.spotify.com/album/5fPeB4Pe5xrTWuNqfDFBQp", "apple": "https://music.apple.com/us/album/erased-by-light/6824302828?i=6824302829", "deezer": "https://www.deezer.com/track/4355829222", "all": "https://distrokid.com/hyperfollow/deaduniverse/erase-by-light"}, title: "Erased by Light", year: 2026, cover: "assets/covers/erased_by_light.jpg", preview: "assets/tracks/erased_by_light.flac?v=64",
